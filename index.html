@@ -406,14 +406,15 @@
             position: sticky;
             top: 0;
             z-index: 20;
-            padding: 12px 20px; /* fixed padding */
+            padding: 12px 20px;
             background: var(--bg-root);
             transition: background var(--transition-smooth);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             background: rgba(var(--bg-root-rgb), 0.7);
             border-radius: var(--radius);
-            border: 1px solid var(--border-visible);
+            border: none;
+            box-shadow: var(--shadow-sm);
         }
         .top-bar::after {
             content: '';
@@ -424,6 +425,7 @@
             -webkit-backdrop-filter: blur(12px);
             z-index: -1;
             border-radius: var(--radius);
+            border: none;
         }
         .top-bar h1 {
             font-weight: 700;
@@ -453,7 +455,7 @@
             width: 100%;
             padding: 11px 16px 11px 42px;
             border-radius: var(--radius-full);
-            border: 1.5px solid var(--border-visible);
+            border: none;
             background: var(--bg-surface);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -465,10 +467,10 @@
             outline: none;
             -webkit-appearance: none;
             appearance: none;
+            box-shadow: var(--shadow-sm);
         }
         .search-wrap input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 5px var(--accent-subtle);
+            box-shadow: 0 0 0 3px var(--accent-subtle), var(--shadow-sm);
         }
         .search-wrap input:focus+i,
         .search-wrap input:focus~i {
@@ -517,10 +519,10 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             color: var(--text-secondary);
-            border: 1.5px solid var(--border-visible);
+            border: none;
+            box-shadow: var(--shadow-sm);
         }
         .btn-ghost:hover {
-            border-color: var(--accent);
             color: var(--accent);
             background: var(--accent-subtle);
         }
@@ -540,7 +542,8 @@
         .btn-danger {
             background: rgba(220, 80, 100, 0.2);
             color: #f4a0ac;
-            border: 1px solid rgba(220, 80, 100, 0.3);
+            border: none;
+            box-shadow: var(--shadow-sm);
         }
         .btn-danger:hover {
             background: rgba(220, 80, 100, 0.35);
@@ -555,7 +558,8 @@
             border-radius: var(--radius-full);
             padding: 3px;
             gap: 1px;
-            border: 1px solid var(--border-visible);
+            border: none;
+            box-shadow: var(--shadow-sm);
         }
         .view-toggle button {
             all: unset;
@@ -585,11 +589,11 @@
             font-weight: 600;
         }
 
-        /* ─── SORT SELECT (styled like view-toggle) ─── */
+        /* ─── SORT SELECT ─── */
         .sort-select {
             padding: 8px 15px;
             border-radius: var(--radius-full);
-            border: 1.5px solid var(--border-visible);
+            border: none;
             background: var(--bg-surface);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -608,9 +612,10 @@
             background-position: right 12px center;
             padding-right: 36px;
             min-height: 40px;
+            box-shadow: var(--shadow-sm);
         }
         .sort-select:focus {
-            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-subtle), var(--shadow-sm);
         }
 
         /* ─── MOVIE GRID ─── */
@@ -1776,7 +1781,6 @@
                 document.documentElement.style.setProperty('--accent-muted', darkenHex(settings.accentColor, 0.12));
                 document.documentElement.style.setProperty('--accent-glow', settings.accentColor + '47');
                 document.documentElement.style.setProperty('--accent-subtle', settings.accentColor + '17');
-                // Update ambient blur color
                 document.getElementById('ambientBlur').style.background =
                     `radial-gradient(ellipse at 30% 40%, ${settings.accentColor} 0%, transparent 70%),
                      radial-gradient(ellipse at 70% 60%, ${settings.accentColor} 0%, transparent 60%)`;
@@ -2024,7 +2028,6 @@
                 $movieContainer.classList.toggle('list-view', currentViewMode === 'list');
             }
 
-            // View toggle - click handler
             document.querySelectorAll('#viewToggle button').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     const mode = this.dataset.viewMode;
@@ -2127,7 +2130,6 @@
             function observeCards() {
                 if (cardObserver) cardObserver.disconnect();
                 if (window.innerWidth <= 900) {
-                    // On mobile, just make all visible instantly
                     document.querySelectorAll('.movie-card').forEach(c => c.classList.add('visible'));
                     return;
                 }
@@ -2152,13 +2154,11 @@
                 const card = document.createElement('div');
                 card.className = 'movie-card';
                 if (currentViewMode === 'list') card.classList.add('list-card');
-                // On mobile, no animation
                 if (window.innerWidth <= 900) {
                     card.classList.add('visible');
                 } else {
                     card.style.transitionDelay = `${Math.min(index * 0.04, 0.5)}s`;
                 }
-                // Click opens preview
                 card.addEventListener('click', (e) => {
                     if (e.target.closest('button') || e.target.closest('.tag-pill-sm') || e.target.closest('input'))
                         return;
@@ -2287,7 +2287,7 @@
             function closePreviewModal() {
                 $previewModalOverlay.classList.remove('open');
                 document.body.style.overflow = '';
-                previewMovieId = null;
+                // Don't clear previewMovieId here - we need it for edit
             }
 
             $previewCloseBtn.addEventListener('click', closePreviewModal);
@@ -2295,11 +2295,16 @@
                 if (e.target === $previewModalOverlay) closePreviewModal();
             });
 
-            // Edit from preview
-            $previewEditBtn.addEventListener('click', () => {
-                if (previewMovieId) {
+            // ─── EDIT FROM PREVIEW ───
+            $previewEditBtn.addEventListener('click', function() {
+                const idToEdit = previewMovieId;
+                if (idToEdit) {
+                    // Close preview first, then open edit
                     closePreviewModal();
-                    openEditModal(previewMovieId);
+                    // Small delay to ensure modal closes smoothly
+                    setTimeout(() => {
+                        openEditModal(idToEdit);
+                    }, 150);
                 }
             });
 
@@ -2644,7 +2649,6 @@
                     }
                     $sidebar.classList.remove('collapsed');
                     $mainContent.style.marginLeft = '0';
-                    // On resize to mobile, make cards visible
                     document.querySelectorAll('.movie-card').forEach(c => c.classList.add('visible'));
                 }
             });
@@ -2666,12 +2670,11 @@
                 renderCustomCategories();
                 updateStatusDropdown();
                 renderTagSuggestions();
-                // Observe cards after initial render
                 setTimeout(observeCards, 400);
             }
 
             init();
-            console.log('🎬 Jana\'s Movies — Optimized for iPhone with preview & ambient blur.');
+            console.log('🎬 Jana\'s Movies — Fixed edit button & borders removed.');
         })();
     </script>
 </body>
