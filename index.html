@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Cinevault — Personal Movie Organizer</title>
+    <title>Jana's Movies — Personal Movie Organizer</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23d495a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='M8 4v16'/%3E%3Cpath d='M16 4v16'/%3E%3Cpath d='M2 10h20'/%3E%3Cpath d='M2 14h20'/%3E%3C/svg%3E" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -101,6 +101,10 @@
             line-height: 1.5;
             -webkit-tap-highlight-color: transparent;
             position: relative;
+            background-size: cover !important;
+            background-attachment: fixed !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
         }
 
         /* ─── SIDEBAR ─── */
@@ -110,7 +114,7 @@
             left: 0;
             width: var(--sidebar-w);
             height: 100vh;
-            height: 100dvh; /* dynamic viewport height for mobile */
+            height: 100dvh;
             background: var(--bg-glass);
             backdrop-filter: blur(48px) saturate(160%);
             -webkit-backdrop-filter: blur(48px) saturate(160%);
@@ -125,7 +129,7 @@
             overflow-x: hidden;
             box-shadow: 4px 0 40px rgba(0, 0, 0, 0.3);
             -webkit-overflow-scrolling: touch;
-            touch-action: pan-y; /* allow vertical pan */
+            touch-action: pan-y;
         }
         .sidebar.collapsed {
             transform: translateX(calc(-1 * var(--sidebar-w)));
@@ -382,6 +386,7 @@
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             background: rgba(var(--bg-root-rgb), 0.7);
+            border-radius: var(--radius);
         }
         .top-bar::after {
             content: '';
@@ -392,7 +397,7 @@
             -webkit-backdrop-filter: blur(12px);
             z-index: -1;
             border-bottom: 1px solid var(--border-visible);
-            border-radius: 0 0 var(--radius) var(--radius);
+            border-radius: var(--radius);
         }
         .top-bar h1 {
             font-weight: 800;
@@ -1218,6 +1223,7 @@
                 gap: 8px;
                 padding: 6px 0 12px;
                 flex-wrap: wrap;
+                border-radius: var(--radius-sm);
             }
             .top-bar h1 {
                 font-size: 1.25rem;
@@ -1334,7 +1340,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="brand-icon"><i class="bi bi-film"></i></div>
-            <span class="brand-text">Cinevault</span>
+            <span class="brand-text">Jana's Movies</span>
         </div>
         <nav class="sidebar-nav" id="sidebarNav">
             <button data-view="dashboard" class="active"><i class="bi bi-house-door"></i> Dashboard</button>
@@ -1478,8 +1484,8 @@
             'use strict';
 
             // ─── CONSTANTS ───
-            const STORAGE_KEY = 'cinevault_movies_v2';
-            const SETTINGS_KEY = 'cinevault_settings_v2';
+            const STORAGE_KEY = 'jana_movies_v2';
+            const SETTINGS_KEY = 'jana_settings_v2';
             const VALID_STATUSES = ['want-to-watch', 'watching', 'watched', 'unclassified'];
 
             // ─── GENRE → ICON MAP ───
@@ -1541,6 +1547,7 @@
                 defaultSort: 'newest',
                 sidebarCollapsed: false,
                 customCategories: [],
+                backgroundImage: null, // <-- NEW: store base64 image
             };
 
             // ─── DOM REFS ───
@@ -1593,7 +1600,7 @@
                 applySettings();
             }
 
-            // ─── THEME / ACCENT ───
+            // ─── THEME / ACCENT / BACKGROUND ───
             function applySettings() {
                 document.body.classList.toggle('light-mode', settings.theme === 'light');
                 document.documentElement.style.setProperty('--accent', settings.accentColor);
@@ -1601,6 +1608,22 @@
                 document.documentElement.style.setProperty('--accent-muted', darkenHex(settings.accentColor, 0.12));
                 document.documentElement.style.setProperty('--accent-glow', settings.accentColor + '47');
                 document.documentElement.style.setProperty('--accent-subtle', settings.accentColor + '17');
+
+                // Background image handling
+                if (settings.backgroundImage) {
+                    document.body.style.backgroundImage = `url(${settings.backgroundImage})`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundAttachment = 'fixed';
+                    document.body.style.backgroundPosition = 'center';
+                    document.body.style.backgroundColor = 'transparent';
+                } else {
+                    document.body.style.backgroundImage = '';
+                    document.body.style.backgroundSize = '';
+                    document.body.style.backgroundAttachment = '';
+                    document.body.style.backgroundPosition = '';
+                    document.body.style.backgroundColor = '';
+                }
+
                 currentViewMode = settings.defaultView;
                 $sortSelect.value = settings.defaultSort;
                 updateViewToggleUI();
@@ -1660,7 +1683,6 @@
                     const isOpen = $sidebar.classList.toggle('open-mobile');
                     $sidebarOverlay.classList.toggle('visible', isOpen);
                     document.body.classList.toggle('sidebar-open', isOpen);
-                    // Prevent body scroll but allow sidebar scroll
                     if (isOpen) {
                         document.addEventListener('touchmove', preventBodyScroll, { passive: false });
                     } else {
@@ -1675,15 +1697,12 @@
                 }
             }
 
-            // Touchmove handler to prevent scrolling on body when sidebar is open
             function preventBodyScroll(e) {
-                // Allow scroll only if the target is inside the sidebar
                 if (e.target.closest && !e.target.closest('.sidebar')) {
                     e.preventDefault();
                 }
             }
 
-            // Ensure we clean up the listener when sidebar is closed via overlay or other means
             function closeMobileSidebar() {
                 if (window.innerWidth <= 900) {
                     $sidebar.classList.remove('open-mobile');
@@ -2238,8 +2257,9 @@
             $sortSelect.addEventListener('change', () => { settings.defaultSort = $sortSelect.value;
                 saveSettings(); if (currentView !== 'settings') renderMovies(); });
 
-            // ─── SETTINGS (with Export/Import) ───
+            // ─── SETTINGS (with Export/Import & Background) ───
             function renderSettings() {
+                const bgImage = settings.backgroundImage || '';
                 $settingsContainer.innerHTML = `
             <h2><i class="bi bi-gear"></i> Settings</h2>
             <div class="setting-row">
@@ -2270,6 +2290,16 @@
                 <input type="text" id="settingRightLabel" value="${escHTML(settings.ratingRightLabel)}" placeholder="Right label" style="flex:1;min-width:70px;">
               </div>
             </div>
+            <div class="setting-row">
+              <span class="setting-label">Background Image</span>
+              <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+                <input type="file" id="bgImageInput" accept="image/*" style="padding:6px 0;cursor:pointer;background:var(--bg-surface);border-radius:var(--radius-sm);border:1px solid var(--border-visible);color:var(--text-primary);">
+                <div id="bgPreviewContainer" style="max-width:100%;max-height:120px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border-visible);${bgImage ? '' : 'display:none;'}">
+                  <img id="bgPreview" src="${bgImage}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                </div>
+                <button class="btn btn-sm btn-danger" id="removeBgBtn" style="${bgImage ? '' : 'display:none;'}"><i class="bi bi-x-lg"></i> Remove Background</button>
+              </div>
+            </div>
             <div class="setting-row" style="border-bottom: none; flex-wrap: wrap; gap: 12px; justify-content: flex-start;">
               <button class="btn btn-primary" id="exportSettingsBtn" style="flex:1;min-width:120px;"><i class="bi bi-download"></i> Export Library</button>
               <button class="btn btn-ghost" id="importSettingsBtn" style="flex:1;min-width:120px;"><i class="bi bi-upload"></i> Import Library</button>
@@ -2279,6 +2309,10 @@
                 $('#saveSettingsBtn').addEventListener('click', saveSettingsFromPanel);
                 $('#exportSettingsBtn').addEventListener('click', exportLibrary);
                 $('#importSettingsBtn').addEventListener('click', () => { $importFileInput.click(); });
+
+                // Background image handlers
+                $('#bgImageInput').addEventListener('change', handleBackgroundUpload);
+                $('#removeBgBtn').addEventListener('click', removeBackground);
             }
 
             function saveSettingsFromPanel() {
@@ -2297,6 +2331,30 @@
                 showToast('Settings saved!');
             }
 
+            // ─── BACKGROUND HANDLERS ───
+            function handleBackgroundUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    settings.backgroundImage = ev.target.result;
+                    saveSettings();
+                    applySettings();
+                    renderSettings(); // Refresh to show preview
+                    showToast('Background image updated!');
+                };
+                reader.readAsDataURL(file);
+                e.target.value = ''; // Reset so the same file can be re-uploaded
+            }
+
+            function removeBackground() {
+                settings.backgroundImage = null;
+                saveSettings();
+                applySettings();
+                renderSettings();
+                showToast('Background image removed.');
+            }
+
             // ─── EXPORT / IMPORT ───
             function exportLibrary() {
                 const data = JSON.stringify({ movies, settings, exportDate: new Date().toISOString() }, null, 2);
@@ -2304,7 +2362,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `cinevault-backup-${new Date().toISOString().slice(0,10)}.json`;
+                a.download = `jana-movies-backup-${new Date().toISOString().slice(0,10)}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
                 showToast('Library exported!');
@@ -2385,7 +2443,7 @@
             }
 
             init();
-            console.log('🎬 Cinevault ready — Your premium personal movie organizer.');
+            console.log('🎬 Jana\'s Movies ready — Your premium personal movie organizer.');
         })();
     </script>
 </body>
