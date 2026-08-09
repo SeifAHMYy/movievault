@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Jana's Movies — Personal Movie Organizer</title>
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23d495a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='M8 4v16'/%3E%3Cpath d='M16 4v16'/%3E%3Cpath d='M2 10h20'/%3E%3Cpath d='M2 14h20'/%3E%3C/svg%3E" type="image/svg+xml" />
+    <!-- Google Fonts – Aesthetic, modern, cute but not childish -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     <style>
         /* ─── ROOT ─── */
@@ -42,13 +44,11 @@
             --radius-lg: 24px;
             --radius-xl: 30px;
             --radius-full: 9999px;
-            --font: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font: 'Quicksand', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             --transition-fast: 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
             --transition-smooth: 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
             --transition-spring: 0.45s cubic-bezier(0.22, 0.9, 0.18, 1.1);
-            --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             --sidebar-w: 260px;
-            --topbar-h: 64px;
         }
 
         .light-mode {
@@ -83,6 +83,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         html {
             font-size: 15px;
@@ -95,16 +96,42 @@
             background: var(--bg-root);
             color: var(--text-primary);
             min-height: 100vh;
+            min-height: 100dvh;
             overflow-x: hidden;
             transition: background var(--transition-smooth), color var(--transition-smooth);
             letter-spacing: -0.01em;
             line-height: 1.5;
-            -webkit-tap-highlight-color: transparent;
             position: relative;
+        }
+
+        /* ─── BACKGROUND OVERLAY (fix for iOS) ─── */
+        #bgOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
             background-size: cover !important;
-            background-attachment: fixed !important;
             background-position: center !important;
             background-repeat: no-repeat !important;
+            transition: background-image 0.5s ease;
+            will-change: transform;
+        }
+        #bgOverlay::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--bg-root);
+            opacity: 0.85;
+            transition: opacity var(--transition-smooth);
+            z-index: 1;
+        }
+        .light-mode #bgOverlay::after {
+            opacity: 0.7;
+        }
+        body:not(.has-bg) #bgOverlay {
+            display: none;
         }
 
         /* ─── SIDEBAR ─── */
@@ -181,6 +208,9 @@
             letter-spacing: -0.01em;
             position: relative;
             width: 100%;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .sidebar-nav button:hover {
             background: var(--accent-subtle);
@@ -248,6 +278,9 @@
             border: none;
             font-family: var(--font);
             text-align: left;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .custom-cat-wrap .cat-item:hover {
             background: var(--accent-subtle);
@@ -277,6 +310,7 @@
             border-radius: 50%;
             cursor: pointer;
             color: var(--text-tertiary);
+            touch-action: manipulation;
         }
         .custom-cat-wrap .cat-item .cat-del:hover {
             opacity: 1;
@@ -302,6 +336,7 @@
             background: var(--bg-glass-light);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
+            touch-action: manipulation;
         }
         .custom-cat-wrap .cat-add-btn:hover {
             border-color: var(--accent);
@@ -334,6 +369,7 @@
             color: var(--text-primary);
             transition: all var(--transition-fast);
             box-shadow: var(--shadow-sm);
+            touch-action: manipulation;
         }
         .sidebar-toggle-btn:hover {
             box-shadow: var(--shadow-md);
@@ -362,6 +398,8 @@
             min-height: 100vh;
             transition: margin-left var(--transition-smooth);
             max-width: 1500px;
+            position: relative;
+            z-index: 1;
         }
         .sidebar.collapsed~.main-content {
             margin-left: 0;
@@ -400,9 +438,9 @@
             border-radius: var(--radius);
         }
         .top-bar h1 {
-            font-weight: 800;
+            font-weight: 700;
             font-size: 1.75rem;
-            letter-spacing: -0.04em;
+            letter-spacing: -0.03em;
             flex: 1;
             min-width: 130px;
             white-space: nowrap;
@@ -437,6 +475,8 @@
             letter-spacing: -0.01em;
             transition: all var(--transition-fast);
             outline: none;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .search-wrap input:focus {
             border-color: var(--accent);
@@ -462,6 +502,9 @@
             font-family: var(--font);
             position: relative;
             overflow: hidden;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .btn i {
             font-size: 1.05rem;
@@ -536,6 +579,9 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .view-toggle button i {
             font-size: 1rem;
@@ -598,9 +644,19 @@
             display: flex;
             flex-direction: column;
             box-shadow: var(--shadow-sm), 0 8px 32px rgba(0, 0, 0, 0.15);
+            will-change: transform, opacity;
+            /* Scroll animation initial state */
+            opacity: 0;
+            transform: translateY(30px) scale(0.98);
+            transition: opacity 0.6s cubic-bezier(0.22, 0.9, 0.18, 1.1),
+                transform 0.6s cubic-bezier(0.22, 0.9, 0.18, 1.1);
+        }
+        .movie-card.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
         }
         .movie-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-6px) scale(1.01);
             box-shadow: var(--shadow-lg), var(--shadow-glow), 0 12px 48px rgba(0, 0, 0, 0.25);
             border-color: var(--border-visible);
         }
@@ -842,12 +898,13 @@
             transform: translateY(24px) scale(0.94);
             transition: transform var(--transition-spring);
             position: relative;
+            -webkit-overflow-scrolling: touch;
         }
         .modal-overlay.open .modal {
             transform: translateY(0) scale(1);
         }
         .modal h2 {
-            font-weight: 800;
+            font-weight: 700;
             font-size: 1.4rem;
             letter-spacing: -0.03em;
             margin-bottom: 20px;
@@ -884,6 +941,8 @@
             transition: all var(--transition-fast);
             outline: none;
             resize: vertical;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .modal input:focus,
         .modal select:focus,
@@ -904,6 +963,7 @@
             flex: 1;
             min-width: 110px;
             -webkit-appearance: none;
+            appearance: none;
             height: 6px;
             border-radius: 10px;
             background: var(--border-visible);
@@ -912,6 +972,7 @@
         }
         .modal .rating-slider-wrap input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
+            appearance: none;
             width: 26px;
             height: 26px;
             border-radius: 50%;
@@ -949,6 +1010,7 @@
             cursor: pointer;
             font-weight: 500;
             font-size: 0.88rem;
+            touch-action: manipulation;
         }
         .modal .checkbox-group input {
             width: 20px;
@@ -956,6 +1018,27 @@
             accent-color: var(--accent);
             cursor: pointer;
             border-radius: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--bg-surface);
+            border: 1.5px solid var(--border-visible);
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+        .modal .checkbox-group input:checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .modal .checkbox-group input:checked::after {
+            content: '✓';
+            color: #fff;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
         }
         .modal .modal-actions {
             display: flex;
@@ -1009,6 +1092,7 @@
             opacity: 0.7;
             cursor: pointer;
             padding: 0 2px;
+            touch-action: manipulation;
         }
         .tag-pill .tag-remove:hover {
             opacity: 1;
@@ -1021,6 +1105,7 @@
             max-height: 110px;
             overflow-y: auto;
             padding: 4px 2px;
+            -webkit-overflow-scrolling: touch;
         }
         .tag-suggestion {
             display: inline-flex;
@@ -1037,6 +1122,7 @@
             cursor: pointer;
             border: 1px solid var(--border-visible);
             transition: all var(--transition-fast);
+            touch-action: manipulation;
         }
         .tag-suggestion:hover {
             border-color: var(--accent);
@@ -1115,6 +1201,7 @@
             margin-left: auto;
             white-space: nowrap;
             letter-spacing: 0;
+            touch-action: manipulation;
         }
         .toast .toast-undo:hover {
             text-decoration: underline;
@@ -1125,7 +1212,7 @@
             max-width: 620px;
         }
         .settings-panel h2 {
-            font-weight: 800;
+            font-weight: 700;
             font-size: 1.4rem;
             letter-spacing: -0.03em;
             margin-bottom: 20px;
@@ -1168,6 +1255,8 @@
             outline: none;
             transition: all var(--transition-fast);
             text-align: center;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .settings-panel select:focus,
         .settings-panel input:focus {
@@ -1270,6 +1359,11 @@
             .movie-card .poster-emoji {
                 font-size: 2.5rem;
             }
+            .movie-card {
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none !important;
+            }
         }
         @media (max-width: 480px) {
             .movie-grid {
@@ -1326,9 +1420,23 @@
         .items-center {
             align-items: center;
         }
+
+        /* Fix for iOS tap highlight */
+        button,
+        .btn,
+        .cat-item,
+        .cat-add-btn,
+        .tag-suggestion,
+        .view-toggle button,
+        .sidebar-nav button {
+            -webkit-touch-callout: none;
+        }
     </style>
 </head>
 <body>
+
+    <!-- ─── BACKGROUND OVERLAY ─── -->
+    <div id="bgOverlay"></div>
 
     <!-- ─── SIDEBAR TOGGLE ─── -->
     <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle sidebar">
@@ -1547,7 +1655,7 @@
                 defaultSort: 'newest',
                 sidebarCollapsed: false,
                 customCategories: [],
-                backgroundImage: null, // <-- NEW: store base64 image
+                backgroundImage: null,
             };
 
             // ─── DOM REFS ───
@@ -1576,6 +1684,7 @@
             const $mTagInput = $('#mTagInput');
             const $categoryModalOverlay = $('#categoryModalOverlay');
             const $catNameInput = $('#catNameInput');
+            const $bgOverlay = $('#bgOverlay');
 
             // ─── STORAGE ───
             function saveMovies() { localStorage.setItem(STORAGE_KEY, JSON.stringify(movies)); }
@@ -1609,19 +1718,15 @@
                 document.documentElement.style.setProperty('--accent-glow', settings.accentColor + '47');
                 document.documentElement.style.setProperty('--accent-subtle', settings.accentColor + '17');
 
-                // Background image handling
+                // Background image via overlay
                 if (settings.backgroundImage) {
-                    document.body.style.backgroundImage = `url(${settings.backgroundImage})`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundAttachment = 'fixed';
-                    document.body.style.backgroundPosition = 'center';
-                    document.body.style.backgroundColor = 'transparent';
+                    $bgOverlay.style.backgroundImage = `url(${settings.backgroundImage})`;
+                    $bgOverlay.style.display = 'block';
+                    document.body.classList.add('has-bg');
                 } else {
-                    document.body.style.backgroundImage = '';
-                    document.body.style.backgroundSize = '';
-                    document.body.style.backgroundAttachment = '';
-                    document.body.style.backgroundPosition = '';
-                    document.body.style.backgroundColor = '';
+                    $bgOverlay.style.backgroundImage = '';
+                    $bgOverlay.style.display = 'none';
+                    document.body.classList.remove('has-bg');
                 }
 
                 currentViewMode = settings.defaultView;
@@ -1698,7 +1803,7 @@
             }
 
             function preventBodyScroll(e) {
-                if (e.target.closest && !e.target.closest('.sidebar')) {
+                if (e.target.closest && !e.target.closest('.sidebar') && !e.target.closest('.modal-overlay')) {
                     e.preventDefault();
                 }
             }
@@ -1867,14 +1972,23 @@
                 $movieContainer.classList.toggle('list-view', currentViewMode === 'list');
             }
 
-            $viewToggle.addEventListener('click', (e) => {
-                const btn = e.target.closest('button');
-                if (!btn || !btn.dataset.viewMode) return;
-                currentViewMode = btn.dataset.viewMode;
-                settings.defaultView = currentViewMode;
-                saveSettings();
-                updateViewToggleUI();
-                renderMovies();
+            // Fix view toggle for iPhone - use click events directly
+            const viewToggleButtons = $('#viewToggle').querySelectorAll('button');
+            viewToggleButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const mode = this.dataset.viewMode;
+                    if (!mode) return;
+                    currentViewMode = mode;
+                    settings.defaultView = currentViewMode;
+                    saveSettings();
+                    updateViewToggleUI();
+                    renderMovies();
+                });
+                // Also ensure touch works
+                btn.addEventListener('touchstart', function(e) {
+                    // just to ensure no delay, but click is fine
+                }, { passive: true });
             });
 
             // ─── FILTER / SORT ───
@@ -1952,17 +2066,51 @@
                 </div>`;
                     return;
                 }
+                // Use DocumentFragment for performance
+                const fragment = document.createDocumentFragment();
                 filtered.forEach((movie, i) => {
                     const card = createMovieCard(movie, i);
-                    $movieContainer.appendChild(card);
+                    fragment.appendChild(card);
                 });
+                $movieContainer.appendChild(fragment);
+
+                // Observe cards for scroll animation
+                observeCards();
             }
 
+            // ─── SCROLL ANIMATION OBSERVER ───
+            let cardObserver = null;
+
+            function observeCards() {
+                if (cardObserver) cardObserver.disconnect();
+                const cards = document.querySelectorAll('.movie-card:not(.visible)');
+                if (cards.length === 0) return;
+                cardObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            cardObserver.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    threshold: 0.15,
+                    rootMargin: '0px 0px -50px 0px'
+                });
+                cards.forEach(card => cardObserver.observe(card));
+            }
+
+            // ─── CREATE MOVIE CARD ───
             function createMovieCard(movie, index) {
                 const card = document.createElement('div');
-                card.className = 'movie-card fade-in';
+                card.className = 'movie-card';
                 if (currentViewMode === 'list') card.classList.add('list-card');
-                card.style.animationDelay = `${index * 0.04}s`;
+                // If on mobile, we skip animation for performance
+                if (window.innerWidth <= 900) {
+                    card.classList.add('visible');
+                } else {
+                    // delay animation a bit for staggered effect
+                    card.style.transitionDelay = `${Math.min(index * 0.04, 0.5)}s`;
+                }
                 card.addEventListener('click', (e) => {
                     if (e.target.closest('button') || e.target.closest('.tag-pill-sm') || e.target.closest('input'))
                         return;
@@ -2257,7 +2405,7 @@
             $sortSelect.addEventListener('change', () => { settings.defaultSort = $sortSelect.value;
                 saveSettings(); if (currentView !== 'settings') renderMovies(); });
 
-            // ─── SETTINGS (with Export/Import & Background) ───
+            // ─── SETTINGS ───
             function renderSettings() {
                 const bgImage = settings.backgroundImage || '';
                 $settingsContainer.innerHTML = `
@@ -2293,7 +2441,7 @@
             <div class="setting-row">
               <span class="setting-label">Background Image</span>
               <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
-                <input type="file" id="bgImageInput" accept="image/*" style="padding:6px 0;cursor:pointer;background:var(--bg-surface);border-radius:var(--radius-sm);border:1px solid var(--border-visible);color:var(--text-primary);">
+                <input type="file" id="bgImageInput" accept="image/*" style="padding:6px 0;cursor:pointer;background:var(--bg-surface);border-radius:var(--radius-sm);border:1px solid var(--border-visible);color:var(--text-primary);font-family:var(--font);">
                 <div id="bgPreviewContainer" style="max-width:100%;max-height:120px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border-visible);${bgImage ? '' : 'display:none;'}">
                   <img id="bgPreview" src="${bgImage}" style="width:100%;height:100%;object-fit:cover;display:block;">
                 </div>
@@ -2440,139 +2588,14 @@
                 renderCustomCategories();
                 updateStatusDropdown();
                 renderTagSuggestions();
+
+                // Re-run observer after initial render
+                setTimeout(observeCards, 500);
             }
 
             init();
-            console.log('🎬 Jana\'s Movies ready — Your premium personal movie organizer.');
+            console.log('🎬 Jana\'s Movies ready — Optimized for iPhone.');
         })();
     </script>
-
-    <script>
-    
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjsqoWW9uPtZjUfI6PW_OgZFi8KWHBnN48ts4reoxYK7sjPB4l47ug_MqBFw7B91k0Gw/exec";
-
-
-function getDevice() {
-
-    const ua = navigator.userAgent;
-
-    if (/iPhone/i.test(ua))
-        return "iPhone";
-
-    if (/iPad/i.test(ua))
-        return "iPad";
-
-    if (/Android/i.test(ua))
-        return /Mobile/i.test(ua)
-            ? "Android Phone"
-            : "Android Tablet";
-
-    if (/Windows/i.test(ua))
-        return "Windows PC";
-
-    if (/Macintosh/i.test(ua))
-        return "Mac";
-
-    if (/Linux/i.test(ua))
-        return "Linux";
-
-    return "Unknown";
-}
-
-
-async function collectVisitor() {
-
-    try {
-
-        // Get public IP
-        const ipRequest =
-            await fetch("https://api.ipify.org?format=json");
-
-        const ipData =
-            await ipRequest.json();
-
-        const ip =
-            ipData.ip;
-
-
-        // Get country from IP
-        let country = "Unknown";
-
-        try {
-
-            const countryRequest =
-                await fetch(
-                    "https://ipapi.co/" +
-                    encodeURIComponent(ip) +
-                    "/json/"
-                );
-
-            const countryData =
-                await countryRequest.json();
-
-            country =
-                countryData.country_name ||
-                "Unknown";
-
-        } catch (error) {
-
-            console.log("Country lookup failed");
-
-        }
-
-
-        // Detect device
-        const device =
-            getDevice();
-
-
-        // Send information to Google Apps Script
-        await fetch(
-            GOOGLE_SCRIPT_URL,
-            {
-                method: "POST",
-
-                mode: "no-cors",
-
-                headers: {
-                    "Content-Type":
-                        "text/plain;charset=utf-8"
-                },
-
-                body: JSON.stringify({
-
-                    ip: ip,
-
-                    country: country,
-
-                    device: device,
-
-                    userAgent:
-                        navigator.userAgent
-
-                })
-            }
-        );
-
-
-
-
-
-    } catch (error) {
-
-        console.error(
-            "Visitor collection failed:",
-            error
-        );
-
-    }
-
-}
-
-
-// Run automatically when page loads
-collectVisitor();
-</script>
-
 </body>
 </html>
