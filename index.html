@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jana's Movie Vault</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Cinevault — Personal Movie Organizer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
@@ -99,6 +99,14 @@
             letter-spacing: -0.01em;
             line-height: 1.5;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ─── FIX: PREVENT BODY SCROLL WHEN SIDEBAR IS OPEN ─── */
+        body.sidebar-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
 
         /* ─── SIDEBAR ─── */
@@ -1311,7 +1319,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="brand-icon"><i class="bi bi-film"></i></div>
-            <span class="brand-text">Jana's Movies</span>
+            <span class="brand-text">Cinevault</span>
         </div>
         <nav class="sidebar-nav" id="sidebarNav">
             <button data-view="dashboard" class="active"><i class="bi bi-house-door"></i> Dashboard</button>
@@ -1636,12 +1644,15 @@
             // ─── SIDEBAR ───
             function toggleSidebar() {
                 if (window.innerWidth <= 900) {
-                    $sidebar.classList.toggle('open-mobile');
-                    $sidebarOverlay.classList.toggle('visible', $sidebar.classList.contains('open-mobile'));
+                    const isOpen = $sidebar.classList.toggle('open-mobile');
+                    $sidebarOverlay.classList.toggle('visible', isOpen);
+                    // Fix: Prevent body scroll when sidebar is open on mobile
+                    document.body.classList.toggle('sidebar-open', isOpen);
                 } else {
                     $sidebar.classList.toggle('collapsed');
-                    $mainContent.style.marginLeft = $sidebar.classList.contains('collapsed') ? '0' : '';
-                    settings.sidebarCollapsed = $sidebar.classList.contains('collapsed');
+                    const isCollapsed = $sidebar.classList.contains('collapsed');
+                    $mainContent.style.marginLeft = isCollapsed ? '0' : '';
+                    settings.sidebarCollapsed = isCollapsed;
                     saveSettings();
                 }
             }
@@ -1653,6 +1664,7 @@
                 if (window.innerWidth <= 900) {
                     $sidebar.classList.remove('open-mobile');
                     $sidebarOverlay.classList.remove('visible');
+                    document.body.classList.remove('sidebar-open');
                 }
             }
 
@@ -1677,7 +1689,9 @@
                     btn.querySelector('.cat-del').addEventListener('click', (e) => {
                         e.stopPropagation();
                         const name = e.currentTarget.dataset.cat;
-                        if (confirm(`Delete category “${name}”? Movies with this category will be set to “Unclassified”.`)) {
+                        if (confirm(
+                                `Delete category “${name}”? Movies with this category will be set to “Unclassified”.`
+                                )) {
                             settings.customCategories = settings.customCategories.filter(c => c !== name);
                             movies.forEach(m => { if (m.status === name) m.status = 'unclassified'; });
                             saveSettings();
@@ -2295,8 +2309,12 @@
             // ─── RESIZE ───
             window.addEventListener('resize', () => {
                 if (window.innerWidth > 900) {
-                    $sidebarOverlay.classList.remove('visible');
-                    $sidebar.classList.remove('open-mobile');
+                    // If sidebar was open on mobile and we resize to desktop, close it properly.
+                    if ($sidebar.classList.contains('open-mobile')) {
+                        $sidebar.classList.remove('open-mobile');
+                        $sidebarOverlay.classList.remove('visible');
+                        document.body.classList.remove('sidebar-open');
+                    }
                     if (settings.sidebarCollapsed) {
                         $sidebar.classList.add('collapsed');
                         $mainContent.style.marginLeft = '0';
@@ -2305,9 +2323,12 @@
                         $mainContent.style.marginLeft = '';
                     }
                 } else {
-                    $sidebar.classList.remove('collapsed', 'open-mobile');
+                    // Ensure body class is removed if sidebar is closed on mobile view
+                    if (!$sidebar.classList.contains('open-mobile')) {
+                        document.body.classList.remove('sidebar-open');
+                    }
+                    $sidebar.classList.remove('collapsed');
                     $mainContent.style.marginLeft = '0';
-                    $sidebarOverlay.classList.remove('visible');
                 }
             });
 
