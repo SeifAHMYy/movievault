@@ -50,6 +50,7 @@
             --sidebar-w: 260px;
             --topbar-height: 72px;
             --topbar-mobile-height: 68px;
+            --accent-rgb: 212, 149, 168;
         }
 
         .light-mode {
@@ -106,7 +107,6 @@
             position: relative;
         }
 
-        /* ─── BODY SCROLL LOCK (for sidebar open on mobile) ─── */
         html.sidebar-locked,
         html.sidebar-locked body {
             overflow: hidden !important;
@@ -133,6 +133,20 @@
             opacity: 0.15;
         }
 
+        /* ─── PARTICLES CANVAS ─── */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.35;
+            filter: blur(3px);
+            transition: opacity var(--transition-smooth);
+        }
+
         /* ─── SIDEBAR ─── */
         .sidebar {
             position: fixed;
@@ -152,7 +166,7 @@
             box-shadow: 4px 0 40px rgba(0, 0, 0, 0.3);
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
-            background: var(--bg-root);
+            background: rgba(10, 10, 12, 0.92);
             border-right: 1px solid var(--border);
             overscroll-behavior: contain;
         }
@@ -166,13 +180,8 @@
             z-index: -1;
             border-right: 1px solid var(--border);
         }
-        .sidebar::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: var(--bg-root);
-            opacity: 0.3;
-            z-index: -2;
+        .light-mode .sidebar {
+            background: rgba(244, 241, 243, 0.92);
         }
         .sidebar.collapsed {
             transform: translateX(calc(-1 * var(--sidebar-w)));
@@ -405,8 +414,6 @@
             transform: scale(0.93);
             transition: transform 0.1s ease;
         }
-
-        /* Close button inside sidebar (mobile) */
         .sidebar-close-btn {
             all: unset;
             display: none;
@@ -426,7 +433,6 @@
             background: var(--accent-subtle);
             color: var(--accent);
         }
-
         .sidebar-overlay {
             position: fixed;
             inset: 0;
@@ -1343,7 +1349,7 @@
         @media (max-width: 900px) {
             :root {
                 --topbar-height: 68px;
-                --topbar-mobile-height: 64px;
+                --topbar-mobile-height: auto;
             }
             .sidebar {
                 width: 100vw;
@@ -1359,7 +1365,6 @@
             .sidebar.open-mobile {
                 transform: translateX(0);
             }
-            /* Sidebar content centered */
             .sidebar-brand,
             .sidebar-nav,
             .custom-cat-wrap,
@@ -1406,7 +1411,7 @@
                 pointer-events: auto;
             }
 
-            /* ─── TOPBAR FIXED ON MOBILE — PREMIUM REDESIGN ─── */
+            /* ─── MOBILE TOPBAR REDESIGN ─── */
             .top-bar {
                 position: fixed;
                 top: 0;
@@ -1414,23 +1419,22 @@
                 right: 0;
                 z-index: 50;
                 margin-bottom: 0;
-                border-radius: 0 0 20px 20px;
-                padding: 8px 14px 8px 58px;
-                min-height: var(--topbar-mobile-height);
+                border-radius: 0 0 24px 24px;
+                padding: 12px 16px 14px;
+                min-height: auto;
                 background: rgba(var(--bg-root-rgb), 0.78);
                 backdrop-filter: blur(28px) saturate(180%);
                 -webkit-backdrop-filter: blur(28px) saturate(180%);
                 box-shadow:
                     0 1px 0 rgba(255, 255, 255, 0.06) inset,
-                    0 2px 16px rgba(0, 0, 0, 0.45),
-                    0 8px 40px rgba(0, 0, 0, 0.25);
+                    0 4px 24px rgba(0, 0, 0, 0.5),
+                    0 12px 40px rgba(0, 0, 0, 0.3);
                 border-bottom: 1px solid rgba(255, 255, 255, 0.07);
                 display: flex;
-                align-items: center;
-                gap: 10px;
-                flex-wrap: wrap;
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
             }
-            /* Accent shimmer at top */
             .top-bar::before {
                 content: '';
                 position: absolute;
@@ -1440,65 +1444,75 @@
                 height: 1px;
                 background: linear-gradient(90deg,
                         transparent 0%,
-                        rgba(var(--accent-rgb, 212, 149, 168), 0.3) 15%,
-                        rgba(var(--accent-rgb, 212, 149, 168), 0.55) 40%,
-                        rgba(var(--accent-rgb, 212, 149, 168), 0.3) 65%,
+                        rgba(var(--accent-rgb), 0.4) 15%,
+                        rgba(var(--accent-rgb), 0.7) 40%,
+                        rgba(var(--accent-rgb), 0.4) 65%,
                         transparent 100%);
                 z-index: 2;
                 pointer-events: none;
-                opacity: 0.7;
             }
             .top-bar::after {
                 content: '';
                 position: absolute;
                 inset: 0;
                 background: linear-gradient(180deg,
-                        rgba(255, 255, 255, 0.03) 0%,
-                        rgba(255, 255, 255, 0.01) 40%,
+                        rgba(255, 255, 255, 0.04) 0%,
+                        rgba(255, 255, 255, 0.01) 30%,
                         transparent 100%);
                 backdrop-filter: blur(12px);
                 -webkit-backdrop-filter: blur(12px);
                 z-index: -1;
-                border-radius: 0 0 20px 20px;
+                border-radius: 0 0 24px 24px;
                 border: none;
             }
+            .top-bar .top-row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding-left: 48px;
+            }
             .top-bar h1 {
-                font-size: 1.1rem;
-                order: 1;
-                flex: 0 0 auto;
-                width: auto;
+                font-size: 1.2rem;
+                flex: 1;
                 font-weight: 700;
                 letter-spacing: -0.03em;
                 white-space: nowrap;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
             }
-            .search-wrap {
-                order: 3;
+            .top-bar .search-wrap {
+                order: unset;
                 flex: 1 1 100%;
                 max-width: 100%;
                 min-width: 0;
             }
             .search-wrap input {
-                padding: 9px 14px 9px 38px;
-                font-size: 0.82rem;
-                background: rgba(var(--bg-root-rgb), 0.55);
+                padding: 12px 16px 12px 42px;
+                font-size: 0.85rem;
+                background: rgba(var(--bg-root-rgb), 0.6);
                 backdrop-filter: blur(18px);
                 -webkit-backdrop-filter: blur(18px);
-                border: 1px solid rgba(255, 255, 255, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.08);
                 border-radius: var(--radius-full);
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+            }
+            .top-bar .controls-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                padding-left: 48px;
             }
             .view-toggle {
-                order: 4;
-                background: rgba(var(--bg-root-rgb), 0.5);
+                background: rgba(var(--bg-root-rgb), 0.55);
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
                 border-radius: var(--radius-full);
                 padding: 2px;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
             }
             .view-toggle button {
-                padding: 6px 12px;
+                padding: 7px 14px;
                 font-size: 0.75rem;
                 border-radius: var(--radius-full);
             }
@@ -1508,28 +1522,26 @@
                 -webkit-backdrop-filter: blur(20px);
             }
             .sort-select {
-                order: 5;
                 font-size: 0.75rem;
-                padding: 6px 12px;
-                padding-right: 32px;
-                min-height: 34px;
-                background: rgba(var(--bg-root-rgb), 0.5);
+                padding: 7px 12px;
+                padding-right: 34px;
+                min-height: 36px;
+                background: rgba(var(--bg-root-rgb), 0.55);
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
                 border-radius: var(--radius-full);
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
                 border: none;
             }
             #addMovieBtn {
-                order: 2;
-                margin-left: auto;
-                padding: 8px 14px;
-                font-size: 0.78rem;
+                padding: 8px 18px;
+                font-size: 0.8rem;
                 border-radius: var(--radius-full);
-                box-shadow: 0 4px 18px var(--accent-glow);
+                box-shadow: 0 4px 20px var(--accent-glow);
+                margin-left: auto;
             }
             #addMovieBtn i {
-                font-size: 0.9rem;
+                font-size: 0.95rem;
             }
             .movie-grid {
                 grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
@@ -1562,8 +1574,23 @@
             }
         }
         @media (max-width: 480px) {
-            :root {
-                --topbar-mobile-height: 60px;
+            .top-bar {
+                border-radius: 0 0 20px 20px;
+                padding: 10px 12px 12px;
+                gap: 10px;
+            }
+            .top-bar::after {
+                border-radius: 0 0 20px 20px;
+            }
+            .top-bar .top-row {
+                padding-left: 44px;
+            }
+            .top-bar .controls-row {
+                padding-left: 44px;
+                gap: 8px;
+            }
+            .top-bar h1 {
+                font-size: 1rem;
             }
             .movie-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -1585,28 +1612,13 @@
             .btn i {
                 font-size: 0.9rem;
             }
-            .top-bar {
-                padding: 6px 10px 6px 52px;
-                min-height: var(--topbar-mobile-height);
-                border-radius: 0 0 16px 16px;
-                gap: 6px;
-            }
-            .top-bar::after {
-                border-radius: 0 0 16px 16px;
-            }
-            .top-bar h1 {
-                font-size: 0.95rem;
-            }
-            .movie-card .poster-emoji {
-                font-size: 2rem;
-            }
             .search-wrap input {
-                padding: 7px 12px 7px 32px;
-                font-size: 0.76rem;
+                padding: 10px 14px 10px 38px;
+                font-size: 0.8rem;
             }
             .search-wrap i {
-                left: 11px;
-                font-size: 0.85rem;
+                left: 12px;
+                font-size: 0.9rem;
             }
             .view-toggle button {
                 padding: 5px 10px;
@@ -1615,15 +1627,14 @@
             .sort-select {
                 font-size: 0.7rem;
                 padding: 5px 10px;
-                padding-right: 28px;
-                min-height: 30px;
+                padding-right: 30px;
+                min-height: 32px;
             }
             #addMovieBtn {
-                padding: 6px 12px;
-                font-size: 0.72rem;
+                padding: 7px 14px;
+                font-size: 0.75rem;
             }
             .main-content {
-                padding-top: calc(var(--topbar-mobile-height) + 14px);
                 padding-left: 10px;
                 padding-right: 10px;
             }
@@ -1728,18 +1739,15 @@
 </head>
 <body>
 
-    <!-- ─── AMBIENT BLUR ─── -->
     <div id="ambientBlur"></div>
+    <canvas id="particleCanvas"></canvas>
 
-    <!-- ─── SIDEBAR TOGGLE (mobile) ─── -->
     <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle sidebar">
         <i class="bi bi-list"></i>
     </button>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- ─── SIDEBAR ─── -->
     <aside class="sidebar" id="sidebar">
-        <!-- Close button (mobile) -->
         <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close sidebar">
             <i class="bi bi-x-lg"></i>
         </button>
@@ -1758,11 +1766,9 @@
             <button data-view="watched"><i class="bi bi-check2-circle"></i> Watched</button>
             <button data-view="unclassified"><i class="bi bi-question-circle"></i> Unclassified</button>
 
-            <!-- My Categories -->
             <div class="sidebar-divider" id="customCatDivider"></div>
             <div class="sidebar-label" id="customCatLabel">My Categories</div>
             <div class="custom-cat-wrap" id="customCatContainer">
-                <!-- rendered by JS -->
                 <button class="cat-add-btn" id="addCategoryBtn"><i class="bi bi-plus-lg"></i> Add Category</button>
             </div>
 
@@ -1771,35 +1777,37 @@
         </nav>
     </aside>
 
-    <!-- ─── MAIN CONTENT ─── -->
     <div class="main-content" id="mainContent">
         <div class="top-bar" id="topBar">
-            <h1 id="pageTitle">Dashboard</h1>
+            <div class="top-row">
+                <h1 id="pageTitle">Dashboard</h1>
+                <button class="btn btn-primary" id="addMovieBtn"><i class="bi bi-plus-lg"></i> Add Movie</button>
+            </div>
             <div class="search-wrap" id="searchWrap">
                 <i class="bi bi-search"></i>
                 <input type="text" id="searchInput" placeholder="Search movies, tags, genres…" />
             </div>
-            <div class="view-toggle" id="viewToggle">
-                <button data-view-mode="grid" class="active"><i class="bi bi-grid-3x3-gap"></i> Grid</button>
-                <button data-view-mode="list"><i class="bi bi-list-ul"></i> List</button>
+            <div class="controls-row">
+                <div class="view-toggle" id="viewToggle">
+                    <button data-view-mode="grid" class="active"><i class="bi bi-grid-3x3-gap"></i> Grid</button>
+                    <button data-view-mode="list"><i class="bi bi-list-ul"></i> List</button>
+                </div>
+                <select class="sort-select" id="sortSelect">
+                    <option value="newest">Newest Added</option>
+                    <option value="oldest">Oldest Added</option>
+                    <option value="alpha-asc">A → Z</option>
+                    <option value="alpha-desc">Z → A</option>
+                    <option value="year-desc">Year ↓</option>
+                    <option value="year-asc">Year ↑</option>
+                    <option value="rating-desc">Rating ↓</option>
+                    <option value="rating-asc">Rating ↑</option>
+                </select>
             </div>
-            <select class="sort-select" id="sortSelect">
-                <option value="newest">Newest Added</option>
-                <option value="oldest">Oldest Added</option>
-                <option value="alpha-asc">A → Z</option>
-                <option value="alpha-desc">Z → A</option>
-                <option value="year-desc">Year ↓</option>
-                <option value="year-asc">Year ↑</option>
-                <option value="rating-desc">Rating ↓</option>
-                <option value="rating-asc">Rating ↑</option>
-            </select>
-            <button class="btn btn-primary" id="addMovieBtn"><i class="bi bi-plus-lg"></i> Add Movie</button>
         </div>
         <div id="movieContainer" class="movie-grid"></div>
         <div id="settingsContainer" class="settings-panel hidden"></div>
     </div>
 
-    <!-- ─── MOVIE MODAL (Edit/Add) ─── -->
     <div class="modal-overlay" id="movieModalOverlay">
         <div class="modal" id="movieModal">
             <h2 id="modalTitle"><i class="bi bi-plus-circle"></i> Add Movie</h2>
@@ -1841,7 +1849,6 @@
             </div>
             <div class="form-group"><label>Personal Notes</label><textarea id="mNotes" placeholder="Your thoughts…"></textarea></div>
 
-            <!-- ─── TAGS ─── -->
             <div class="form-group">
                 <label>Tags <span style="font-weight:400;text-transform:none;font-size:0.7rem;color:var(--text-tertiary);">(click a genre to add)</span></label>
                 <div class="tag-input-area">
@@ -1849,9 +1856,7 @@
                         <input type="text" id="mTagInput" placeholder="Type tag &amp; press Enter" />
                     </div>
                     <div class="tag-pills" id="tagPillsContainer"></div>
-                    <div class="tag-suggestions" id="tagSuggestionsContainer">
-                        <!-- rendered by JS -->
-                    </div>
+                    <div class="tag-suggestions" id="tagSuggestionsContainer"></div>
                 </div>
             </div>
 
@@ -1865,7 +1870,6 @@
         </div>
     </div>
 
-    <!-- ─── PREVIEW MODAL ─── -->
     <div class="modal-overlay" id="previewModalOverlay">
         <div class="modal" id="previewModal">
             <h2 id="previewTitle"><i class="bi bi-film"></i> Movie Details</h2>
@@ -1877,7 +1881,6 @@
         </div>
     </div>
 
-    <!-- ─── CATEGORY MODAL ─── -->
     <div class="modal-overlay cat-modal" id="categoryModalOverlay">
         <div class="modal" id="categoryModal">
             <h2><i class="bi bi-tag"></i> New Category</h2>
@@ -1892,7 +1895,6 @@
         </div>
     </div>
 
-    <!-- ─── TOAST CONTAINER ─── -->
     <div class="toast-container" id="toastContainer"></div>
     <input type="file" id="importFileInput" accept=".json" style="display:none;" />
 
@@ -1900,12 +1902,10 @@
         (function() {
             'use strict';
 
-            // ─── CONSTANTS ───
             const STORAGE_KEY = 'jana_movies_v2';
             const SETTINGS_KEY = 'jana_settings_v2';
             const VALID_STATUSES = ['want-to-watch', 'watching', 'watched', 'unclassified'];
 
-            // ─── GENRE → ICON MAP ───
             const GENRE_ICONS = {
                 'Action': 'bi-lightning',
                 'Adventure': 'bi-compass',
@@ -1945,7 +1945,6 @@
             const DEFAULT_GENRE_ICON = 'bi-tag';
             const ALL_GENRES = Object.keys(GENRE_ICONS);
 
-            // ─── STATE ───
             let movies = [];
             let currentView = 'dashboard';
             let currentViewMode = 'grid';
@@ -1966,11 +1965,9 @@
                 customCategories: [],
             };
 
-            // ─── SCROLL LOCK STATE ───
             let savedScrollY = 0;
             let isScrollLocked = false;
 
-            // ─── DOM REFS ───
             const $ = (sel) => document.querySelector(sel);
             const $$ = (sel) => document.querySelectorAll(sel);
 
@@ -2002,8 +1999,9 @@
             const $mTagInput = $('#mTagInput');
             const $categoryModalOverlay = $('#categoryModalOverlay');
             const $catNameInput = $('#catNameInput');
+            const $topBar = $('#topBar');
+            const $particleCanvas = $('#particleCanvas');
 
-            // ─── STORAGE ───
             function saveMovies() { localStorage.setItem(STORAGE_KEY, JSON.stringify(movies)); }
 
             function loadMovies() {
@@ -2026,7 +2024,6 @@
                 applySettings();
             }
 
-            // ─── THEME / ACCENT ───
             function applySettings() {
                 document.body.classList.toggle('light-mode', settings.theme === 'light');
                 document.documentElement.style.setProperty('--accent', settings.accentColor);
@@ -2038,7 +2035,6 @@
                     `radial-gradient(ellipse at 30% 40%, ${settings.accentColor} 0%, transparent 70%),
                      radial-gradient(ellipse at 70% 60%, ${settings.accentColor} 0%, transparent 60%)`;
 
-                // Update accent RGB for topbar shimmer
                 const hex = settings.accentColor.replace('#', '');
                 const r = parseInt(hex.substring(0, 2), 16);
                 const g = parseInt(hex.substring(2, 4), 16);
@@ -2057,6 +2053,7 @@
                 }
                 renderCustomCategories();
                 updateStatusDropdown();
+                initParticles();
             }
 
             function lightenHex(hex, amt) {
@@ -2077,7 +2074,6 @@
 
             function genId() { return 'mv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
 
-            // ─── SCROLL LOCK UTILITIES ───
             function lockBodyScroll() {
                 if (isScrollLocked) return;
                 savedScrollY = window.scrollY || window.pageYOffset;
@@ -2087,7 +2083,6 @@
                 document.body.style.top = `-${savedScrollY}px`;
                 document.body.style.width = '100%';
                 document.body.style.overflow = 'hidden';
-                // Add touchmove listener for extra protection
                 document.addEventListener('touchmove', preventBodyScroll, { passive: false });
             }
 
@@ -2100,33 +2095,24 @@
                 document.body.style.width = '';
                 document.body.style.overflow = '';
                 document.removeEventListener('touchmove', preventBodyScroll);
-                // Restore scroll position
                 window.scrollTo(0, savedScrollY);
                 savedScrollY = 0;
             }
 
             function preventBodyScroll(e) {
-                // Allow scrolling inside the sidebar or modal overlays
-                const target = e.target;
-                if (target && target.closest) {
-                    if (target.closest('.sidebar') || target.closest('.modal-overlay')) {
-                        return; // Allow scroll within these elements
-                    }
-                }
+                if (e.target && e.target.closest && (e.target.closest('.sidebar') || e.target.closest('.modal-overlay')))
+                    return;
                 e.preventDefault();
             }
 
-            // ─── TOAST ───
             function showToast(msg, undoCallback) {
                 const t = document.createElement('div');
                 t.className = 'toast';
                 t.innerHTML =
                     `<i class="bi bi-check-circle" style="color:var(--accent);font-size:1.1rem;"></i><span>${msg}</span>${undoCallback ? '<span class="toast-undo">Undo</span>' : ''}`;
                 $toastContainer.appendChild(t);
-                if (undoCallback) {
-                    t.querySelector('.toast-undo').addEventListener('click', () => { undoCallback();
-                        removeToast(t); });
-                }
+                if (undoCallback) t.querySelector('.toast-undo').addEventListener('click', () => { undoCallback();
+                    removeToast(t); });
                 const timer = setTimeout(() => removeToast(t), 3800);
                 t._timer = timer;
             }
@@ -2137,17 +2123,13 @@
                 setTimeout(() => { if (t.parentNode) t.remove(); }, 300);
             }
 
-            // ─── SIDEBAR ───
             function toggleSidebar() {
                 if (window.innerWidth <= 900) {
                     const isOpen = $sidebar.classList.toggle('open-mobile');
                     $sidebarOverlay.classList.toggle('visible', isOpen);
                     document.body.classList.toggle('sidebar-open', isOpen);
-                    if (isOpen) {
-                        lockBodyScroll();
-                    } else {
-                        unlockBodyScroll();
-                    }
+                    if (isOpen) lockBodyScroll();
+                    else unlockBodyScroll();
                 } else {
                     $sidebar.classList.toggle('collapsed');
                     const isCollapsed = $sidebar.classList.contains('collapsed');
@@ -2170,7 +2152,6 @@
             $sidebarCloseBtn.addEventListener('click', closeSidebar);
             $sidebarOverlay.addEventListener('click', closeSidebar);
 
-            // ─── CUSTOM CATEGORIES ───
             function renderCustomCategories() {
                 const container = $customCatContainer;
                 container.querySelectorAll('.cat-item').forEach(el => el.remove());
@@ -2204,9 +2185,7 @@
                                 currentView = 'all';
                                 setActiveView('all');
                                 updateUIForView();
-                            } else {
-                                renderMovies();
-                            }
+                            } else renderMovies();
                             showToast(`Category “${name}” deleted.`);
                         }
                     });
@@ -2217,7 +2196,6 @@
                 document.getElementById('customCatLabel').style.display = hasCats ? 'block' : 'none';
             }
 
-            // ─── CATEGORY MODAL ───
             function openCategoryModal() {
                 $catNameInput.value = '';
                 $categoryModalOverlay.classList.add('open');
@@ -2227,9 +2205,7 @@
 
             function closeCategoryModal() {
                 $categoryModalOverlay.classList.remove('open');
-                if (!isScrollLocked) {
-                    document.body.style.overflow = '';
-                }
+                if (!isScrollLocked) document.body.style.overflow = '';
             }
 
             function saveCategoryFromModal() {
@@ -2248,9 +2224,8 @@
             $addCategoryBtn.addEventListener('click', openCategoryModal);
             $('#saveCategoryBtn').addEventListener('click', saveCategoryFromModal);
             $('#cancelCategoryBtn').addEventListener('click', closeCategoryModal);
-            $categoryModalOverlay.addEventListener('click', (e) => {
-                if (e.target === $categoryModalOverlay) closeCategoryModal();
-            });
+            $categoryModalOverlay.addEventListener('click', (e) => { if (e.target === $categoryModalOverlay)
+                    closeCategoryModal(); });
             $catNameInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') { e.preventDefault();
                     saveCategoryFromModal(); }
@@ -2273,12 +2248,11 @@
                 }).join('');
             }
 
-            // ─── NAV ───
             function setActiveView(viewId) {
-                $$('.sidebar-nav button[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === viewId));
-                $customCatContainer.querySelectorAll('.cat-item').forEach(el =>
-                    el.classList.toggle('active', el.dataset.view === viewId)
-                );
+                $$('.sidebar-nav button[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view ===
+                    viewId));
+                $customCatContainer.querySelectorAll('.cat-item').forEach(el => el.classList.toggle('active', el.dataset
+                    .view === viewId));
             }
 
             $$('.sidebar-nav button[data-view]').forEach(btn => {
@@ -2302,10 +2276,8 @@
                     settings: 'Settings'
                 };
                 let title = titles[currentView];
-                if (!title && currentView && currentView.startsWith('custom-')) {
-                    const catName = currentView.replace('custom-', '');
-                    title = catName;
-                }
+                if (!title && currentView && currentView.startsWith('custom-')) title = currentView.replace('custom-',
+                    '');
                 $pageTitle.textContent = title || 'Movies';
                 const isSettings = currentView === 'settings';
                 $movieContainer.classList.toggle('hidden', isSettings);
@@ -2336,7 +2308,6 @@
                 });
             });
 
-            // ─── FILTER / SORT ───
             function getFilteredMovies() {
                 let filtered = [...movies];
                 const term = $searchInput.value.toLowerCase().trim();
@@ -2389,26 +2360,14 @@
                 return filtered;
             }
 
-            // ─── RENDER MOVIES ───
             function renderMovies() {
                 const filtered = getFilteredMovies();
                 $movieContainer.innerHTML = '';
                 if (filtered.length === 0) {
                     const isDash = currentView === 'dashboard';
                     $movieContainer.innerHTML = isDash ?
-                        `<div class="empty-state">
-                  <div class="empty-icon"><i class="bi bi-film"></i></div>
-                  <h3>Your collection is empty</h3>
-                  <p>Start building your personal movie library. Add your first film and it'll appear here.</p>
-                  <button class="btn btn-primary" onclick="document.getElementById('addMovieBtn').click()">
-                    <i class="bi bi-plus-lg"></i> Add Your First Movie
-                  </button>
-                </div>` :
-                        `<div class="empty-state">
-                  <div class="empty-icon"><i class="bi bi-search"></i></div>
-                  <h3>No movies found</h3>
-                  <p>Try adjusting your search or filters to discover your collection.</p>
-                </div>`;
+                        `<div class="empty-state"><div class="empty-icon"><i class="bi bi-film"></i></div><h3>Your collection is empty</h3><p>Start building your personal movie library.</p><button class="btn btn-primary" onclick="document.getElementById('addMovieBtn').click()"><i class="bi bi-plus-lg"></i> Add Your First Movie</button></div>` :
+                        `<div class="empty-state"><div class="empty-icon"><i class="bi bi-search"></i></div><h3>No movies found</h3><p>Try adjusting your search or filters.</p></div>`;
                     return;
                 }
                 const fragment = document.createDocumentFragment();
@@ -2420,7 +2379,6 @@
                 observeCards();
             }
 
-            // ─── SCROLL ANIMATION OBSERVER ───
             let cardObserver = null;
 
             function observeCards() {
@@ -2438,46 +2396,29 @@
                             cardObserver.unobserve(entry.target);
                         }
                     });
-                }, {
-                    threshold: 0.12,
-                    rootMargin: '0px 0px -40px 0px'
-                });
+                }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
                 cards.forEach(card => cardObserver.observe(card));
             }
 
-            // ─── CREATE MOVIE CARD ───
             function createMovieCard(movie, index) {
                 const card = document.createElement('div');
                 card.className = 'movie-card';
                 if (currentViewMode === 'list') card.classList.add('list-card');
-                if (window.innerWidth <= 900) {
-                    card.classList.add('visible');
-                } else {
-                    card.style.transitionDelay = `${Math.min(index * 0.04, 0.5)}s`;
-                }
+                if (window.innerWidth <= 900) card.classList.add('visible');
+                else card.style.transitionDelay = `${Math.min(index * 0.04, 0.5)}s`;
                 card.addEventListener('click', (e) => {
                     if (e.target.closest('button') || e.target.closest('.tag-pill-sm') || e.target.closest('input'))
                         return;
                     openPreviewModal(movie.id);
                 });
-
                 const posterHTML = movie.posterUrl ?
                     `<img src="${escHTML(movie.posterUrl)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` :
                     '';
                 const emojiDisplay = movie.posterUrl ? 'display:none;' : 'display:flex;';
-
-                const statusClassMap = {
-                    'want-to-watch': 'badge-want',
-                    'watching': 'badge-watching',
-                    'watched': 'badge-watched',
-                    'unclassified': 'badge-unclassified'
-                };
-                const statusLabelMap = {
-                    'want-to-watch': 'Want',
-                    'watching': 'Watching',
-                    'watched': 'Watched',
-                    'unclassified': 'Uncl.'
-                };
+                const statusClassMap = { 'want-to-watch': 'badge-want', watching: 'badge-watching', watched: 'badge-watched',
+                    unclassified: 'badge-unclassified' };
+                const statusLabelMap = { 'want-to-watch': 'Want', watching: 'Watching', watched: 'Watched',
+                    unclassified: 'Uncl.' };
                 let statusClass = statusClassMap[movie.status] || 'badge-unclassified';
                 let statusLabel = statusLabelMap[movie.status] || (settings.customCategories.includes(movie.status) ?
                     movie.status : 'Uncl.');
@@ -2485,25 +2426,20 @@
                     statusClass = 'badge-custom';
                     statusLabel = movie.status;
                 }
-
-                const favHTML = movie.favorite ?
-                    '<span class="fav-indicator"><i class="bi bi-heart-fill"></i></span>' : '';
+                const favHTML = movie.favorite ? '<span class="fav-indicator"><i class="bi bi-heart-fill"></i></span>' : '';
                 const rewatchHTML = movie.wouldRewatch ?
                     '<span class="rewatch-indicator"><i class="bi bi-arrow-repeat"></i></span>' : '';
-
                 const tags = movie.tags || [];
                 const tagsHTML = tags.slice(0, 4).map(t => {
                     const icon = getIconForTag(t);
                     return `<span class="tag-pill-sm"><i class="${icon}"></i> ${escHTML(t)}</span>`;
                 }).join('');
                 const more = tags.length > 4 ? `<span class="tag-pill-sm">+${tags.length-4}</span>` : '';
-
                 card.innerHTML = `
             <div class="poster">
               ${posterHTML}
               <span class="poster-emoji" style="${emojiDisplay}"><i class="bi bi-film" style="font-size:2.8rem;"></i></span>
-              ${favHTML}
-              ${rewatchHTML}
+              ${favHTML} ${rewatchHTML}
             </div>
             <div class="card-body">
               <div class="card-title">${escHTML(movie.title)}</div>
@@ -2520,9 +2456,7 @@
             function getIconForTag(tag) {
                 if (GENRE_ICONS[tag]) return GENRE_ICONS[tag];
                 const lower = tag.toLowerCase();
-                for (const [key, icon] of Object.entries(GENRE_ICONS)) {
-                    if (key.toLowerCase() === lower) return icon;
-                }
+                for (const [key, icon] of Object.entries(GENRE_ICONS)) if (key.toLowerCase() === lower) return icon;
                 return DEFAULT_GENRE_ICON;
             }
 
@@ -2532,7 +2466,6 @@
                 return d.innerHTML;
             }
 
-            // ─── PREVIEW MODAL ───
             let previewMovieId = null;
 
             function openPreviewModal(movieId) {
@@ -2547,14 +2480,9 @@
                     const icon = getIconForTag(t);
                     return `<span class="tag-pill-sm"><i class="${icon}"></i> ${escHTML(t)}</span>`;
                 }).join('');
-                const statusMap = {
-                    'want-to-watch': 'Want to Watch',
-                    'watching': 'Watching',
-                    'watched': 'Watched',
-                    'unclassified': 'Unclassified'
-                };
+                const statusMap = { 'want-to-watch': 'Want to Watch', watching: 'Watching', watched: 'Watched',
+                    unclassified: 'Unclassified' };
                 const statusLabel = statusMap[movie.status] || movie.status;
-
                 $previewContent.innerHTML = `
               ${posterHtml}
               <div class="preview-detail">
@@ -2574,36 +2502,26 @@
               ${tagsHtml ? `<div class="preview-tags">${tagsHtml}</div>` : ''}
               <div style="font-size:0.7rem;color:var(--text-tertiary);margin-top:8px;">
                 Added: ${new Date(movie.dateAdded).toLocaleDateString()} ${movie.lastEdited ? `· Last edited: ${new Date(movie.lastEdited).toLocaleDateString()}` : ''}
-              </div>
-            `;
+              </div>`;
                 $previewModalOverlay.classList.add('open');
                 document.body.style.overflow = 'hidden';
             }
 
             function closePreviewModal() {
                 $previewModalOverlay.classList.remove('open');
-                if (!isScrollLocked) {
-                    document.body.style.overflow = '';
-                }
+                if (!isScrollLocked) document.body.style.overflow = '';
             }
-
             $previewCloseBtn.addEventListener('click', closePreviewModal);
-            $previewModalOverlay.addEventListener('click', (e) => {
-                if (e.target === $previewModalOverlay) closePreviewModal();
-            });
-
-            // ─── EDIT FROM PREVIEW ───
+            $previewModalOverlay.addEventListener('click', (e) => { if (e.target === $previewModalOverlay)
+                    closePreviewModal(); });
             $previewEditBtn.addEventListener('click', function() {
                 const idToEdit = previewMovieId;
                 if (idToEdit) {
                     closePreviewModal();
-                    setTimeout(() => {
-                        openEditModal(idToEdit);
-                    }, 150);
+                    setTimeout(() => openEditModal(idToEdit), 150);
                 }
             });
 
-            // ─── EDIT/ADD MODAL ───
             function openAddModal() {
                 editingId = null;
                 tempTags = [];
@@ -2654,9 +2572,7 @@
 
             function closeModal() {
                 $movieModalOverlay.classList.remove('open');
-                if (!isScrollLocked) {
-                    document.body.style.overflow = '';
-                }
+                if (!isScrollLocked) document.body.style.overflow = '';
                 editingId = null;
                 tempTags = [];
                 clearModalFields();
@@ -2675,7 +2591,6 @@
                 renderTagSuggestions();
             }
 
-            // ─── RATING ───
             function updateRatingSliderFromSettings() {
                 const slider = $('#mRating');
                 slider.min = settings.ratingMin;
@@ -2691,16 +2606,12 @@
                 const val = parseFloat($('#mRating').value);
                 $('#ratingDisplay').textContent = settings.ratingStep < 1 ? val.toFixed(1) : Math.round(val);
             }
-
             $('#mRating').addEventListener('input', updateRatingDisplay);
 
-            // ─── TAGS ───
             function renderTagPills() {
                 $tagPillsContainer.innerHTML = tempTags.map(tag => {
                     const icon = getIconForTag(tag);
-                    return `<span class="tag-pill" data-tag="${escHTML(tag)}">
-                <i class="${icon}"></i> ${escHTML(tag)} <span class="tag-remove">&times;</span>
-              </span>`;
+                    return `<span class="tag-pill" data-tag="${escHTML(tag)}"><i class="${icon}"></i> ${escHTML(tag)} <span class="tag-remove">&times;</span></span>`;
                 }).join('');
                 $tagPillsContainer.querySelectorAll('.tag-remove').forEach(sp => {
                     sp.parentElement.addEventListener('click', (e) => {
@@ -2718,9 +2629,7 @@
                 const suggestions = ALL_GENRES.filter(g => !added.has(g.toLowerCase()));
                 $tagSuggestionsContainer.innerHTML = suggestions.map(g => {
                     const icon = GENRE_ICONS[g] || DEFAULT_GENRE_ICON;
-                    return `<span class="tag-suggestion" data-genre="${escHTML(g)}">
-                <i class="${icon}"></i> ${escHTML(g)}
-              </span>`;
+                    return `<span class="tag-suggestion" data-genre="${escHTML(g)}"><i class="${icon}"></i> ${escHTML(g)}</span>`;
                 }).join('');
                 $tagSuggestionsContainer.querySelectorAll('.tag-suggestion').forEach(el => {
                     el.addEventListener('click', () => {
@@ -2733,7 +2642,6 @@
                     });
                 });
             }
-
             $mTagInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -2747,7 +2655,6 @@
                 }
             });
 
-            // ─── SAVE / DELETE ───
             function saveMovieFromModal() {
                 const title = $('#mTitle').value.trim();
                 if (!title) { showToast('Please enter a title.'); return; }
@@ -2817,52 +2724,22 @@
             $movieModalOverlay.addEventListener('click', (e) => { if (e.target === $movieModalOverlay) closeModal(); });
             document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $movieModalOverlay.classList.contains(
                     'open')) closeModal(); });
-
             $searchInput.addEventListener('input', () => { if (currentView !== 'settings') renderMovies(); });
             $sortSelect.addEventListener('change', () => { settings.defaultSort = $sortSelect.value;
                 saveSettings(); if (currentView !== 'settings') renderMovies(); });
 
-            // ─── SETTINGS ───
             function renderSettings() {
                 $settingsContainer.innerHTML = `
             <h2><i class="bi bi-gear"></i> Settings</h2>
-            <div class="setting-row">
-              <span class="setting-label">Theme</span>
-              <select id="settingTheme" style="padding:8px 14px;border-radius:30px;border:1.5px solid var(--border-visible);background:var(--bg-surface);backdrop-filter:blur(12px);color:var(--text-primary);font-family:var(--font);cursor:pointer;font-size:0.84rem;">
-                <option value="dark" ${settings.theme==='dark'?'selected':''}><i class="bi bi-moon"></i> Dark</option>
-                <option value="light" ${settings.theme==='light'?'selected':''}><i class="bi bi-sun"></i> Light</option>
-              </select>
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Accent Color</span>
-              <input type="color" id="settingAccent" value="${settings.accentColor}">
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Rating Range</span>
-              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                <input type="number" id="settingRatingMin" value="${settings.ratingMin}" style="width:55px;">
-                <span style="color:var(--text-tertiary);">to</span>
-                <input type="number" id="settingRatingMax" value="${settings.ratingMax}" style="width:55px;">
-                <span style="color:var(--text-tertiary);">step</span>
-                <input type="number" id="settingRatingStep" value="${settings.ratingStep}" step="0.1" min="0.1" style="width:55px;">
-              </div>
-            </div>
-            <div class="setting-row">
-              <span class="setting-label">Rating Labels</span>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
-                <input type="text" id="settingLeftLabel" value="${escHTML(settings.ratingLeftLabel)}" placeholder="Left label" style="flex:1;min-width:70px;">
-                <input type="text" id="settingRightLabel" value="${escHTML(settings.ratingRightLabel)}" placeholder="Right label" style="flex:1;min-width:70px;">
-              </div>
-            </div>
-            <div class="setting-row" style="border-bottom: none; flex-wrap: wrap; gap: 12px; justify-content: flex-start;">
-              <button class="btn btn-primary" id="exportSettingsBtn" style="flex:1;min-width:120px;"><i class="bi bi-download"></i> Export Library</button>
-              <button class="btn btn-ghost" id="importSettingsBtn" style="flex:1;min-width:120px;"><i class="bi bi-upload"></i> Import Library</button>
-            </div>
-            <button class="btn btn-primary" id="saveSettingsBtn" style="margin-top:20px;"><i class="bi bi-check-lg"></i> Save Settings</button>
-            `;
+            <div class="setting-row"><span class="setting-label">Theme</span><select id="settingTheme" style="padding:8px 14px;border-radius:30px;"><option value="dark" ${settings.theme==='dark'?'selected':''}>Dark</option><option value="light" ${settings.theme==='light'?'selected':''}>Light</option></select></div>
+            <div class="setting-row"><span class="setting-label">Accent Color</span><input type="color" id="settingAccent" value="${settings.accentColor}"></div>
+            <div class="setting-row"><span class="setting-label">Rating Range</span><div style="display:flex;gap:6px;"><input type="number" id="settingRatingMin" value="${settings.ratingMin}" style="width:55px;"><span>to</span><input type="number" id="settingRatingMax" value="${settings.ratingMax}" style="width:55px;"><span>step</span><input type="number" id="settingRatingStep" value="${settings.ratingStep}" step="0.1" min="0.1" style="width:55px;"></div></div>
+            <div class="setting-row"><span class="setting-label">Rating Labels</span><div style="display:flex;gap:8px;flex:1;"><input type="text" id="settingLeftLabel" value="${escHTML(settings.ratingLeftLabel)}"><input type="text" id="settingRightLabel" value="${escHTML(settings.ratingRightLabel)}"></div></div>
+            <div class="setting-row"><button class="btn btn-primary" id="exportSettingsBtn"><i class="bi bi-download"></i> Export Library</button><button class="btn btn-ghost" id="importSettingsBtn"><i class="bi bi-upload"></i> Import Library</button></div>
+            <button class="btn btn-primary" id="saveSettingsBtn" style="margin-top:20px;"><i class="bi bi-check-lg"></i> Save Settings</button>`;
                 $('#saveSettingsBtn').addEventListener('click', saveSettingsFromPanel);
                 $('#exportSettingsBtn').addEventListener('click', exportLibrary);
-                $('#importSettingsBtn').addEventListener('click', () => { $importFileInput.click(); });
+                $('#importSettingsBtn').addEventListener('click', () => $importFileInput.click());
             }
 
             function saveSettingsFromPanel() {
@@ -2881,7 +2758,6 @@
                 showToast('Settings saved!');
             }
 
-            // ─── EXPORT / IMPORT ───
             function exportLibrary() {
                 const data = JSON.stringify({ movies, settings, exportDate: new Date().toISOString() }, null, 2);
                 const blob = new Blob([data], { type: 'application/json' });
@@ -2892,9 +2768,7 @@
                 a.click();
                 URL.revokeObjectURL(url);
                 showToast('Library exported!');
-                closeSidebar();
             }
-
             $importFileInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -2903,11 +2777,8 @@
                     try {
                         const data = JSON.parse(ev.target.result);
                         if (data.movies && Array.isArray(data.movies)) {
-                            movies = data.movies.map(m => ({
-                                ...m,
-                                status: VALID_STATUSES.includes(m.status) ? m.status : 'unclassified',
-                                tags: Array.isArray(m.tags) ? m.tags : [],
-                            }));
+                            movies = data.movies.map(m => ({ ...m, status: VALID_STATUSES.includes(m.status) ? m
+                                    .status : 'unclassified', tags: Array.isArray(m.tags) ? m.tags : [] }));
                             if (data.settings) settings = { ...settings, ...data.settings };
                             if (!Array.isArray(settings.customCategories)) settings.customCategories = [];
                             saveMovies();
@@ -2916,24 +2787,88 @@
                             renderMovies();
                             if (currentView === 'dashboard' || currentView === 'settings') updateUIForView();
                             showToast('Library imported!');
-                        } else { showToast('Invalid backup file.'); }
+                        } else showToast('Invalid backup file.');
                     } catch (err) { showToast('Error reading file.'); }
                 };
                 reader.readAsText(file);
                 $importFileInput.value = '';
             });
 
-            // ─── RESIZE ───
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 900) {
-                    // Unlock scroll if transitioning from mobile
-                    if (isScrollLocked && $sidebar.classList.contains('open-mobile')) {
-                        unlockBodyScroll();
+            // ─── PARTICLES ───
+            let particles = [];
+            let particleAnimationId = null;
+
+            function initParticles() {
+                if (particleAnimationId) cancelAnimationFrame(particleAnimationId);
+                const canvas = $particleCanvas;
+                const ctx = canvas.getContext('2d');
+                const accentRGB = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() ||
+                    '212,149,168';
+                const accentColor = `rgba(${accentRGB}, 0.6)`;
+                const particleCount = window.innerWidth < 600 ? 20 : 35;
+                particles = [];
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        vx: (Math.random() - 0.5) * 0.25,
+                        vy: (Math.random() - 0.5) * 0.25,
+                        size: Math.random() * 4 + 1.5,
+                        opacity: Math.random() * 0.25 + 0.15,
+                    });
+                }
+
+                function resize() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+                window.addEventListener('resize', resize);
+                resize();
+
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (let p of particles) {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.x < -10) p.x = canvas.width + 10;
+                        if (p.x > canvas.width + 10) p.x = -10;
+                        if (p.y < -10) p.y = canvas.height + 10;
+                        if (p.y > canvas.height + 10) p.y = -10;
+                        ctx.beginPath();
+                        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
+                        gradient.addColorStop(0, `rgba(${accentRGB}, ${p.opacity * 1.2})`);
+                        gradient.addColorStop(0.4, `rgba(${accentRGB}, ${p.opacity * 0.6})`);
+                        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.fillStyle = gradient;
+                        ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
+                        ctx.fill();
                     }
+                    particleAnimationId = requestAnimationFrame(draw);
+                }
+                draw();
+            }
+
+            // ─── DYNAMIC TOPBAR HEIGHT (mobile) ───
+            function updateMainPadding() {
+                if (window.innerWidth <= 900) {
+                    const topbarHeight = $topBar.offsetHeight;
+                    $mainContent.style.paddingTop = (topbarHeight + 16) + 'px';
+                    document.documentElement.style.setProperty('--topbar-mobile-height', topbarHeight + 'px');
+                } else {
+                    $mainContent.style.paddingTop = '';
+                    document.documentElement.style.setProperty('--topbar-mobile-height', '');
+                }
+            }
+            const topbarResizeObserver = new ResizeObserver(() => updateMainPadding());
+            topbarResizeObserver.observe($topBar);
+
+            window.addEventListener('resize', () => {
+                updateMainPadding();
+                if (window.innerWidth > 900) {
+                    if (isScrollLocked) unlockBodyScroll();
                     if ($sidebar.classList.contains('open-mobile')) {
                         $sidebar.classList.remove('open-mobile');
                         $sidebarOverlay.classList.remove('visible');
-                        document.body.classList.remove('sidebar-open');
                     }
                     if (settings.sidebarCollapsed) {
                         $sidebar.classList.add('collapsed');
@@ -2943,19 +2878,12 @@
                         $mainContent.style.marginLeft = '';
                     }
                 } else {
-                    if (isScrollLocked && !$sidebar.classList.contains('open-mobile')) {
-                        unlockBodyScroll();
-                    }
-                    if (!$sidebar.classList.contains('open-mobile')) {
-                        document.body.classList.remove('sidebar-open');
-                    }
+                    if (isScrollLocked && !$sidebar.classList.contains('open-mobile')) unlockBodyScroll();
                     $sidebar.classList.remove('collapsed');
                     $mainContent.style.marginLeft = '0';
-                    document.querySelectorAll('.movie-card').forEach(c => c.classList.add('visible'));
                 }
             });
 
-            // ─── INIT ───
             function init() {
                 loadSettings();
                 loadMovies();
@@ -2973,17 +2901,11 @@
                 updateStatusDropdown();
                 renderTagSuggestions();
                 setTimeout(observeCards, 400);
-
-                // Initialize accent RGB from settings
-                const hex = settings.accentColor.replace('#', '');
-                const r = parseInt(hex.substring(0, 2), 16);
-                const g = parseInt(hex.substring(2, 4), 16);
-                const b = parseInt(hex.substring(4, 6), 16);
-                document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
+                updateMainPadding();
+                initParticles();
             }
-
             init();
-            console.log('🎬 Jana\'s Movies — Mobile fixes applied: topbar redesigned, toggle overlap fixed, scroll locked when sidebar open.');
+            console.log('🎬 Jana\'s Movies — refined topbar, particles, sidebar glass consistency.');
         })();
     </script>
 </body>
