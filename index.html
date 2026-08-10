@@ -142,9 +142,7 @@
             box-shadow: 4px 0 40px rgba(0, 0, 0, 0.3);
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
-            /* SOLID FALLBACK for iOS transparency bug */
             background: var(--bg-root);
-            /* Glass overlay via pseudo */
             border-right: 1px solid var(--border);
         }
         .sidebar::before {
@@ -157,7 +155,6 @@
             z-index: -1;
             border-right: 1px solid var(--border);
         }
-        /* Fix for iOS scroll transparency - additional solid layer */
         .sidebar::after {
             content: '';
             position: absolute;
@@ -365,7 +362,7 @@
             font-size: 1rem;
         }
 
-        /* ─── SIDEBAR TOGGLE ─── */
+        /* ─── SIDEBAR TOGGLE (mobile) ─── */
         .sidebar-toggle-btn {
             all: unset;
             position: fixed;
@@ -393,6 +390,28 @@
             box-shadow: var(--shadow-md);
             border-color: var(--accent);
         }
+
+        /* Close button inside sidebar (mobile) */
+        .sidebar-close-btn {
+            all: unset;
+            display: none;
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            z-index: 120;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+            touch-action: manipulation;
+        }
+        .sidebar-close-btn:hover {
+            background: var(--accent-subtle);
+            color: var(--accent);
+        }
+
         .sidebar-overlay {
             position: fixed;
             inset: 0;
@@ -1306,25 +1325,54 @@
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 900px) {
+            :root {
+                --topbar-height: 68px;
+            }
             .sidebar {
-                transform: translateX(calc(-1 * var(--sidebar-w)));
-                width: var(--sidebar-w);
-                z-index: 101;
-                -webkit-overflow-scrolling: touch;
-                touch-action: pan-y;
-                height: 100vh;
-                height: 100dvh;
+                width: 100vw;
+                transform: translateX(-100%);
+                border-right: none;
+                box-shadow: none;
+                padding-top: 60px;
+                align-items: center;
+            }
+            .sidebar::before {
+                border-right: none;
             }
             .sidebar.open-mobile {
                 transform: translateX(0);
             }
+            /* Sidebar content centered */
+            .sidebar-brand,
+            .sidebar-nav,
+            .custom-cat-wrap,
+            .sidebar-divider,
+            .sidebar-label {
+                width: 100%;
+                max-width: 420px;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            .sidebar-nav button {
+                justify-content: flex-start;
+            }
+            .sidebar-close-btn {
+                display: block !important;
+                position: absolute;
+                top: 16px;
+                right: 20px;
+                z-index: 120;
+            }
             .sidebar-toggle-btn {
                 display: flex;
+                z-index: 110;
+                top: 14px;
+                left: 14px;
             }
             .main-content {
                 margin-left: 0 !important;
                 padding: 14px 12px;
-                padding-top: calc(var(--topbar-height) + 16px);
+                padding-top: calc(var(--topbar-height) + 20px);
             }
             .sidebar-overlay.visible {
                 opacity: 1;
@@ -1471,7 +1519,7 @@
                 font-size: 0.72rem;
             }
             .main-content {
-                padding-top: calc(var(--topbar-height) + 12px);
+                padding-top: calc(var(--topbar-height) + 16px);
                 padding-left: 10px;
                 padding-right: 10px;
             }
@@ -1572,7 +1620,7 @@
     <!-- ─── AMBIENT BLUR ─── -->
     <div id="ambientBlur"></div>
 
-    <!-- ─── SIDEBAR TOGGLE ─── -->
+    <!-- ─── SIDEBAR TOGGLE (mobile) ─── -->
     <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle sidebar">
         <i class="bi bi-list"></i>
     </button>
@@ -1580,6 +1628,10 @@
 
     <!-- ─── SIDEBAR ─── -->
     <aside class="sidebar" id="sidebar">
+        <!-- Close button (mobile) -->
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close sidebar">
+            <i class="bi bi-x-lg"></i>
+        </button>
         <div class="sidebar-brand">
             <div class="brand-icon"><i class="bi bi-film"></i></div>
             <span class="brand-text">Jana's Movies</span>
@@ -1809,6 +1861,7 @@
 
             const $sidebar = $('#sidebar');
             const $sidebarToggleBtn = $('#sidebarToggleBtn');
+            const $sidebarCloseBtn = $('#sidebarCloseBtn');
             const $sidebarOverlay = $('#sidebarOverlay');
             const $mainContent = $('#mainContent');
             const $movieContainer = $('#movieContainer');
@@ -1943,13 +1996,7 @@
                 }
             }
 
-            function preventBodyScroll(e) {
-                if (e.target.closest && !e.target.closest('.sidebar') && !e.target.closest('.modal-overlay')) {
-                    e.preventDefault();
-                }
-            }
-
-            function closeMobileSidebar() {
+            function closeSidebar() {
                 if (window.innerWidth <= 900) {
                     $sidebar.classList.remove('open-mobile');
                     $sidebarOverlay.classList.remove('visible');
@@ -1958,8 +2005,15 @@
                 }
             }
 
+            function preventBodyScroll(e) {
+                if (e.target.closest && !e.target.closest('.sidebar') && !e.target.closest('.modal-overlay')) {
+                    e.preventDefault();
+                }
+            }
+
             $sidebarToggleBtn.addEventListener('click', toggleSidebar);
-            $sidebarOverlay.addEventListener('click', closeMobileSidebar);
+            $sidebarCloseBtn.addEventListener('click', closeSidebar);
+            $sidebarOverlay.addEventListener('click', closeSidebar);
 
             // ─── CUSTOM CATEGORIES ───
             function renderCustomCategories() {
@@ -1977,7 +2031,7 @@
                         setActiveView(btn.dataset.view);
                         currentView = btn.dataset.view;
                         updateUIForView();
-                        closeMobileSidebar();
+                        closeSidebar();
                     });
                     btn.querySelector('.cat-del').addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -2075,7 +2129,7 @@
                     setActiveView(btn.dataset.view);
                     currentView = btn.dataset.view;
                     updateUIForView();
-                    closeMobileSidebar();
+                    closeSidebar();
                 });
             });
 
@@ -2677,7 +2731,7 @@
                 a.click();
                 URL.revokeObjectURL(url);
                 showToast('Library exported!');
-                closeMobileSidebar();
+                closeSidebar();
             }
 
             $importFileInput.addEventListener('change', (e) => {
@@ -2756,7 +2810,7 @@
             }
 
             init();
-            console.log('🎬 Jana\'s Movies — Fixed sidebar background & topbar on mobile.');
+            console.log('🎬 Jana\'s Movies — Fixed topbar padding, sidebar full-width centered, close button added.');
         })();
     </script>
 </body>
