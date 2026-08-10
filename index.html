@@ -433,6 +433,7 @@
         .sidebar-overlay.visible {
             opacity: 1;
             pointer-events: auto;
+            touch-action: none;
         }
         .main-content {
             margin-left: var(--sidebar-w);
@@ -683,7 +684,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: var(--shadow-sm), 0 8px 32px rgba(0, 0, 0, 0.15);
-            will-change: transform;
+            will-change: transform, opacity;
             opacity: 0;
             transform: translateY(30px) scale(0.98);
             transition: opacity 0.6s cubic-bezier(0.22, 0.9, 0.18, 1.1), transform 0.6s cubic-bezier(0.22, 0.9, 0.18, 1.1);
@@ -1429,9 +1430,8 @@
                 gap: 10px;
             }
             .movie-card {
-                opacity: 1 !important;
-                transform: none !important;
-                transition: none !important;
+                /* Animation now works on mobile too! */
+                transition: opacity 0.5s cubic-bezier(0.22, 0.9, 0.18, 1.1), transform 0.5s cubic-bezier(0.22, 0.9, 0.18, 1.1);
             }
             .modal {
                 padding: 20px 14px;
@@ -1485,15 +1485,6 @@
                 font-size: 1rem;
             }
         }
-        .sidebar::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    /* background: var(--bg-glass); */
-    -webkit-backdrop-filter: blur(48px) saturate(160%);
-    z-index: -1;
-    border-right: 1px solid var(--border);
-}
     </style>
 </head>
 <body>
@@ -1571,7 +1562,7 @@
         <div id="settingsContainer" class="settings-panel hidden"></div>
     </div>
 
-    <!-- Modals (unchanged) -->
+    <!-- Modals (unchanged structure) -->
     <div class="modal-overlay" id="movieModalOverlay">
         <div class="modal" id="movieModal">
             <h2 id="modalTitle"><i class="bi bi-plus-circle"></i> Add Movie</h2>
@@ -1664,8 +1655,8 @@
 
             function saveMovies() { localStorage.setItem(STORAGE_KEY, JSON.stringify(movies)); }
 
-            function loadMovies() { const raw = localStorage.getItem(STORAGE_KEY);
-                movies = raw ? JSON.parse(raw) : [];
+            function loadMovies() { const raw = localStorage.getItem(STORAGE_KEY); try { movies = raw ? JSON.parse(raw) :
+                    [] } catch (e) { movies = [] };
                 movies = movies.map(m => ({ ...m, status: VALID_STATUSES.includes(m.status) ? m.status : 'unclassified',
                     tags: Array.isArray(m.tags) ? m.tags : [] }));
                 saveMovies(); }
@@ -1739,6 +1730,13 @@
             function preventBodyScroll(e) { if (e.target && e.target.closest && (e.target.closest('.sidebar') || e.target
                     .closest('.modal-overlay'))) return;
                 e.preventDefault() }
+
+            // Extra prevention on overlay for iOS
+            $sidebarOverlay.addEventListener('touchmove', function(e) {
+                if ($sidebarOverlay.classList.contains('visible')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
 
             function showToast(msg, undo) { const t = document.createElement('div');
                 t.className = 'toast';
@@ -1911,18 +1909,16 @@
                 updateSubtitle() }
             let cardObserver = null;
 
-            function observeCards() { if (cardObserver) cardObserver.disconnect(); if (window.innerWidth <= 900) { document
-                    .querySelectorAll('.movie-card').forEach(c => c.classList.add('visible')); return } const cards = document
-                    .querySelectorAll('.movie-card:not(.visible)'); if (cards.length === 0) return;
+            function observeCards() { if (cardObserver) cardObserver.disconnect(); const cards = document.querySelectorAll(
+                    '.movie-card:not(.visible)'); if (cards.length === 0) return;
                 cardObserver = new IntersectionObserver(entries => { entries.forEach(en => { if (en.isIntersecting) { en.target
                             .classList.add('visible');
-                        cardObserver.unobserve(en.target) } }) }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+                        cardObserver.unobserve(en.target) } }) }, { threshold: 0.15, rootMargin: '0px 0px -20px 0px' });
                 cards.forEach(c => cardObserver.observe(c)) }
 
             function createMovieCard(m, i) { const card = document.createElement('div');
-                card.className = 'movie-card'; if (currentViewMode === 'list') card.classList.add('list-card'); if (window
-                    .innerWidth <= 900) card.classList.add('visible'); else card.style.transitionDelay =
-                    `${Math.min(i*0.04,0.5)}s`;
+                card.className = 'movie-card'; if (currentViewMode === 'list') card.classList.add('list-card');
+                card.style.transitionDelay = `${Math.min(i*0.04,0.5)}s`;
                 card.addEventListener('click', e => { if (e.target.closest('button') || e.target.closest('.tag-pill-sm') || e
                         .target.closest('input')) return;
                     openPreviewModal(m.id) }); const posterHTML = m.posterUrl ?
@@ -2155,26 +2151,45 @@
                 reader.readAsText(file);
                 $importFileInput.value = '' });
 
-            // ⌘ K keyboard shortcut
-            document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault();
-                    $searchInput.focus();
-                    $searchInput.select() } });
+            // ⌘K shortcut with fix #6 (check visibility)
+            document.addEventListener('keydown', e => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    if (!$searchWrap.classList.contains('hidden')) {
+                        $searchInput.focus();
+                        $searchInput.select();
+                    }
+                }
+            });
 
             let particles = [],
-                particleAnimId = null;
+                particleAnimId = null,
+                particleResizeHandler = null;
 
-            function initParticles() { if (particleAnimId) cancelAnimationFrame(particleAnimId); const canvas = $particleCanvas,
+            function initParticles() {
+                if (particleAnimId) cancelAnimationFrame(particleAnimId);
+                if (particleResizeHandler) window.removeEventListener('resize', particleResizeHandler);
+                const canvas = $particleCanvas,
                     ctx = canvas.getContext('2d'),
                     aR = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() ||
                     '212,149,168',
                     pc = window.innerWidth < 600 ? 25 : 40;
-                particles = []; for (let i = 0; i < pc; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() *
-                        canvas.height, vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35, size: Math.random() *
-                        5 + 2, opacity: Math.random() * 0.35 + 0.25 });
+                particles = [];
+                for (let i = 0; i < pc; i++) particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.35,
+                    vy: (Math.random() - 0.5) * 0.35,
+                    size: Math.random() * 5 + 2,
+                    opacity: Math.random() * 0.35 + 0.25
+                });
+
                 function resize() { canvas.width = window.innerWidth;
                     canvas.height = window.innerHeight }
+                particleResizeHandler = resize;
                 window.addEventListener('resize', resize);
                 resize();
+
                 function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); for (let p of particles) { p.x += p.vx;
                         p.y += p.vy; if (p.x < -10) p.x = canvas.width + 10; if (p.x > canvas.width + 10) p.x = -10; if (p.y <
                             -10) p.y = canvas.height + 10; if (p.y > canvas.height + 10) p.y = -10;
@@ -2186,7 +2201,8 @@
                         ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
                         ctx.fill() }
                     particleAnimId = requestAnimationFrame(draw) }
-                draw() }
+                draw();
+            }
 
             function updateMainPadding() { if (window.innerWidth <= 900) { const h = $topBar.offsetHeight;
                     $mainContent.style.paddingTop = (h + 14) + 'px';
@@ -2219,9 +2235,10 @@
                 renderTagSuggestions();
                 setTimeout(observeCards, 400);
                 updateMainPadding();
-                initParticles() }
+                // Duplicate initParticles removed (fix #3)
+            }
             init();
-            console.log('🎬 Jana\'s Movies — premium header redesign complete.');
+            console.log('🎬 Jana\'s Movies — polished with subtle animations & iOS fixes.');
         })();
     </script>
 </body>
