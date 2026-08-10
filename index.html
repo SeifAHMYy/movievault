@@ -671,6 +671,7 @@
             gap: 10px;
             max-width: 800px;
         }
+        /* New animation: quick fade-up */
         .movie-card {
             background: var(--bg-card);
             backdrop-filter: blur(24px) saturate(140%);
@@ -686,12 +687,12 @@
             box-shadow: var(--shadow-sm), 0 8px 32px rgba(0, 0, 0, 0.15);
             will-change: transform, opacity;
             opacity: 0;
-            transform: translateY(30px) scale(0.98);
-            transition: opacity 0.6s cubic-bezier(0.22, 0.9, 0.18, 1.1), transform 0.6s cubic-bezier(0.22, 0.9, 0.18, 1.1);
+            transform: translateY(16px);
+            transition: opacity 0.45s ease-out, transform 0.45s ease-out;
         }
         .movie-card.visible {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
         }
         .movie-card:hover {
             transform: translateY(-6px) scale(1.01);
@@ -1430,8 +1431,7 @@
                 gap: 10px;
             }
             .movie-card {
-                /* Animation now works on mobile too! */
-                transition: opacity 0.5s cubic-bezier(0.22, 0.9, 0.18, 1.1), transform 0.5s cubic-bezier(0.22, 0.9, 0.18, 1.1);
+                transition: opacity 0.45s ease-out, transform 0.45s ease-out;
             }
             .modal {
                 padding: 20px 14px;
@@ -1654,15 +1654,11 @@
                 $particleCanvas = $('#particleCanvas');
 
             function saveMovies() { localStorage.setItem(STORAGE_KEY, JSON.stringify(movies)); }
-
-            function loadMovies() { const raw = localStorage.getItem(STORAGE_KEY); try { movies = raw ? JSON.parse(raw) :
-                    [] } catch (e) { movies = [] };
+            function loadMovies() { const raw = localStorage.getItem(STORAGE_KEY); try { movies = raw ? JSON.parse(raw) : [] } catch (e) { movies = [] };
                 movies = movies.map(m => ({ ...m, status: VALID_STATUSES.includes(m.status) ? m.status : 'unclassified',
                     tags: Array.isArray(m.tags) ? m.tags : [] }));
                 saveMovies(); }
-
             function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
-
             function loadSettings() { const raw = localStorage.getItem(SETTINGS_KEY); if (raw) try { settings = { ...settings,
                         ...JSON.parse(raw) } } catch (_) {} if (!Array.isArray(settings.customCategories)) settings
                     .customCategories = [];
@@ -1683,8 +1679,7 @@
                 document.documentElement.style.setProperty('--accent-rgb', `${r},${g},${b}`);
                 currentViewMode = settings.defaultView;
                 $sortSelect.value = settings.defaultSort;
-                updateViewToggleUI(); if (settings.sidebarCollapsed && window.innerWidth > 900) { $sidebar.classList.add(
-                        'collapsed');
+                updateViewToggleUI(); if (settings.sidebarCollapsed && window.innerWidth > 900) { $sidebar.classList.add('collapsed');
                     $mainContent.style.marginLeft = '0' } else if (window.innerWidth > 900 && !settings.sidebarCollapsed) {
                     $sidebar.classList.remove('collapsed');
                     $mainContent.style.marginLeft = '' }
@@ -1695,15 +1690,11 @@
             function lightenHex(h, a) { const n = parseInt(h.slice(1), 16),
                     rr = Math.min(255, (n >> 16) + Math.round(a * 255)),
                     gg = Math.min(255, ((n >> 8) & 0xFF) + Math.round(a * 200)),
-                    bb = Math.min(255, (n & 0xFF) + Math.round(a * 180)); return '#' + [rr, gg, bb].map(v => v.toString(
-                    16).padStart(2, '0')).join('') }
-
+                    bb = Math.min(255, (n & 0xFF) + Math.round(a * 180)); return '#' + [rr, gg, bb].map(v => v.toString(16).padStart(2, '0')).join('') }
             function darkenHex(h, a) { const n = parseInt(h.slice(1), 16),
                     rr = Math.max(0, (n >> 16) - Math.round(a * 255)),
                     gg = Math.max(0, ((n >> 8) & 0xFF) - Math.round(a * 200)),
-                    bb = Math.max(0, (n & 0xFF) - Math.round(a * 180)); return '#' + [rr, gg, bb].map(v => v.toString(16)
-                    .padStart(2, '0')).join('') }
-
+                    bb = Math.max(0, (n & 0xFF) - Math.round(a * 180)); return '#' + [rr, gg, bb].map(v => v.toString(16).padStart(2, '0')).join('') }
             function genId() { return 'mv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) }
 
             function lockBodyScroll() { if (isScrollLocked) return;
@@ -1715,7 +1706,6 @@
                 document.body.style.width = '100%';
                 document.body.style.overflow = 'hidden';
                 document.addEventListener('touchmove', preventBodyScroll, { passive: false }) }
-
             function unlockBodyScroll() { if (!isScrollLocked) return;
                 isScrollLocked = false;
                 document.documentElement.classList.remove('sidebar-locked');
@@ -1726,40 +1716,26 @@
                 document.removeEventListener('touchmove', preventBodyScroll);
                 window.scrollTo(0, savedScrollY);
                 savedScrollY = 0 }
-
-            function preventBodyScroll(e) { if (e.target && e.target.closest && (e.target.closest('.sidebar') || e.target
-                    .closest('.modal-overlay'))) return;
+            function preventBodyScroll(e) { if (e.target && e.target.closest && (e.target.closest('.sidebar') || e.target.closest('.modal-overlay'))) return;
                 e.preventDefault() }
-
-            // Extra prevention on overlay for iOS
-            $sidebarOverlay.addEventListener('touchmove', function(e) {
-                if ($sidebarOverlay.classList.contains('visible')) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
+            $sidebarOverlay.addEventListener('touchmove', function(e) { if ($sidebarOverlay.classList.contains('visible')) { e.preventDefault(); } }, { passive: false });
 
             function showToast(msg, undo) { const t = document.createElement('div');
                 t.className = 'toast';
-                t.innerHTML =
-                    `<i class="bi bi-check-circle" style="color:var(--accent);font-size:1.1rem;"></i><span>${msg}</span>${undo ? '<span class="toast-undo">Undo</span>' : ''}`;
+                t.innerHTML = `<i class="bi bi-check-circle" style="color:var(--accent);font-size:1.1rem;"></i><span>${msg}</span>${undo ? '<span class="toast-undo">Undo</span>' : ''}`;
                 $toastContainer.appendChild(t); if (undo) t.querySelector('.toast-undo').addEventListener('click', () => { undo();
                     removeToast(t) }); const timer = setTimeout(() => removeToast(t), 3800);
                 t._timer = timer }
-
             function removeToast(t) { clearTimeout(t._timer);
                 t.classList.add('removing');
                 setTimeout(() => { if (t.parentNode) t.remove() }, 300) }
 
-            function toggleSidebar() { if (window.innerWidth <= 900) { const isOpen = $sidebar.classList.toggle(
-                        'open-mobile');
+            function toggleSidebar() { if (window.innerWidth <= 900) { const isOpen = $sidebar.classList.toggle('open-mobile');
                     $sidebarOverlay.classList.toggle('visible', isOpen);
-                    document.body.classList.toggle('sidebar-open', isOpen); if (isOpen) lockBodyScroll(); else
-                    unlockBodyScroll() } else { $sidebar.classList.toggle('collapsed'); const c = $sidebar.classList
-                        .contains('collapsed');
+                    document.body.classList.toggle('sidebar-open', isOpen); if (isOpen) lockBodyScroll(); else unlockBodyScroll() } else { $sidebar.classList.toggle('collapsed'); const c = $sidebar.classList.contains('collapsed');
                     $mainContent.style.marginLeft = c ? '0' : '';
                     settings.sidebarCollapsed = c;
                     saveSettings() } }
-
             function closeSidebar() { if (window.innerWidth <= 900) { $sidebar.classList.remove('open-mobile');
                     $sidebarOverlay.classList.remove('visible');
                     document.body.classList.remove('sidebar-open');
@@ -1773,17 +1749,13 @@
                 (settings.customCategories || []).forEach(cat => { const b = document.createElement('button');
                     b.className = 'cat-item';
                     b.dataset.view = 'custom-' + cat;
-                    b.innerHTML =
-                        `<i class="bi bi-tag"></i><span>${escHTML(cat)}</span><span class="cat-del" data-cat="${escHTML(cat)}"><i class="bi bi-x-lg"></i></span>`;
+                    b.innerHTML = `<i class="bi bi-tag"></i><span>${escHTML(cat)}</span><span class="cat-del" data-cat="${escHTML(cat)}"><i class="bi bi-x-lg"></i></span>`;
                     b.addEventListener('click', e => { if (e.target.closest('.cat-del')) return;
                         setActiveView(b.dataset.view);
                         currentView = b.dataset.view;
                         updateUIForView();
                         closeSidebar() });
-                    b.querySelector('.cat-del').addEventListener('click', e => { e.stopPropagation(); const n = e
-                            .currentTarget.dataset.cat; if (confirm(
-                                `Delete category "${n}"?`)) { settings.customCategories = settings
-                                .customCategories.filter(x => x !== n);
+                    b.querySelector('.cat-del').addEventListener('click', e => { e.stopPropagation(); const n = e.currentTarget.dataset.cat; if (confirm(`Delete category "${n}"?`)) { settings.customCategories = settings.customCategories.filter(x => x !== n);
                             movies.forEach(m => { if (m.status === n) m.status = 'unclassified' });
                             saveSettings();
                             saveMovies();
@@ -1800,14 +1772,8 @@
                 $categoryModalOverlay.classList.add('open');
                 document.body.style.overflow = 'hidden';
                 setTimeout(() => $catNameInput.focus(), 200) }
-
-            function closeCategoryModal() { $categoryModalOverlay.classList.remove('open'); if (!isScrollLocked) document.body
-                    .style.overflow = '' }
-
-            function saveCategoryFromModal() { const n = $catNameInput.value.trim(); if (!n) { showToast(
-                    'Please enter a category name.'); return } if (VALID_STATUSES.includes(n)) { showToast(
-                    `"${n}" is a default status.`); return } if (settings.customCategories.includes(n)) { showToast(
-                    'Category already exists.'); return }
+            function closeCategoryModal() { $categoryModalOverlay.classList.remove('open'); if (!isScrollLocked) document.body.style.overflow = '' }
+            function saveCategoryFromModal() { const n = $catNameInput.value.trim(); if (!n) { showToast('Please enter a category name.'); return } if (VALID_STATUSES.includes(n)) { showToast(`"${n}" is a default status.`); return } if (settings.customCategories.includes(n)) { showToast('Category already exists.'); return }
                 settings.customCategories.push(n);
                 saveSettings();
                 renderCustomCategories();
@@ -1817,8 +1783,7 @@
             $addCategoryBtn.addEventListener('click', openCategoryModal);
             $('#saveCategoryBtn').addEventListener('click', saveCategoryFromModal);
             $('#cancelCategoryBtn').addEventListener('click', closeCategoryModal);
-            $categoryModalOverlay.addEventListener('click', e => { if (e.target === $categoryModalOverlay)
-                closeCategoryModal() });
+            $categoryModalOverlay.addEventListener('click', e => { if (e.target === $categoryModalOverlay) closeCategoryModal() });
             $catNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault();
                     saveCategoryFromModal() } if (e.key === 'Escape') closeCategoryModal() });
 
@@ -1828,24 +1793,18 @@
                     cu = settings.customCategories || [],
                     ao = [...p, ...cu],
                     v = cv && ao.includes(cv) ? cv : 'watched';
-                s.innerHTML = ao.map(o => { const l = o === 'want-to-watch' ? 'Want to Watch' : o === 'watching' ?
-                        'Watching' : o === 'watched' ? 'Watched' : o === 'unclassified' ? 'Unclassified' : o; return `<option value="${escHTML(o)}" ${o===v?'selected':''}>${escHTML(l)}</option>` }).join(
-                    '') }
+                s.innerHTML = ao.map(o => { const l = o === 'want-to-watch' ? 'Want to Watch' : o === 'watching' ? 'Watching' : o === 'watched' ? 'Watched' : o === 'unclassified' ? 'Unclassified' : o; return `<option value="${escHTML(o)}" ${o===v?'selected':''}>${escHTML(l)}</option>` }).join('') }
 
-            function setActiveView(id) { $$('.sidebar-nav button[data-view]').forEach(b => b.classList.toggle('active', b
-                    .dataset.view === id));
-                $customCatContainer.querySelectorAll('.cat-item').forEach(e => e.classList.toggle('active', e.dataset.view ===
-                    id)) }
-            $$('.sidebar-nav button[data-view]').forEach(b => b.addEventListener('click', () => { setActiveView(b.dataset
-                    .view);
+            function setActiveView(id) { $$('.sidebar-nav button[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === id));
+                $customCatContainer.querySelectorAll('.cat-item').forEach(e => e.classList.toggle('active', e.dataset.view === id)) }
+            $$('.sidebar-nav button[data-view]').forEach(b => b.addEventListener('click', () => { setActiveView(b.dataset.view);
                 currentView = b.dataset.view;
                 updateUIForView();
                 closeSidebar() }));
 
             function updateUIForView() { const titles = { dashboard: 'Dashboard', all: 'All Movies', favorites: 'Favorites',
-                    'want-to-watch': 'Want to Watch', watching: 'Watching', watched: 'Watched',
-                unclassified: 'Unclassified', settings: 'Settings' }; let t = titles[currentView]; if (!t && currentView &&
-                    currentView.startsWith('custom-')) t = currentView.replace('custom-', '');
+                    'want-to-watch': 'Want to Watch', watching: 'Watching', watched: 'Watched', unclassified: 'Unclassified',
+                settings: 'Settings' }; let t = titles[currentView]; if (!t && currentView && currentView.startsWith('custom-')) t = currentView.replace('custom-', '');
                 $pageTitle.textContent = t || 'Movies'; const isS = currentView === 'settings';
                 $movieContainer.classList.toggle('hidden', isS);
                 $settingsContainer.classList.toggle('hidden', !isS);
@@ -1855,52 +1814,24 @@
                 $addMovieBtn.classList.toggle('hidden', isS); if (isS) renderSettings(); else renderMovies();
                 updateViewToggleUI();
                 updateSubtitle() }
-
             function updateSubtitle() { const f = getFilteredMovies(),
-                    total = movies.length; if (currentView === 'dashboard') $pageSubtitle.textContent =
-                    `Recently added · ${total} film${total!==1?'s':''} total`; else if (currentView === 'settings')
-                    $pageSubtitle.textContent = ''; else $pageSubtitle.textContent =
-                    `${f.length} film${f.length!==1?'s':''} in your collection` }
-
-            function updateViewToggleUI() { $$('#viewToggle button').forEach(b => b.classList.toggle('active', b.dataset
-                    .viewMode === currentViewMode));
+                    total = movies.length; if (currentView === 'dashboard') $pageSubtitle.textContent = `Recently added · ${total} film${total!==1?'s':''} total`; else if (currentView === 'settings') $pageSubtitle.textContent = ''; else $pageSubtitle.textContent = `${f.length} film${f.length!==1?'s':''} in your collection` }
+            function updateViewToggleUI() { $$('#viewToggle button').forEach(b => b.classList.toggle('active', b.dataset.viewMode === currentViewMode));
                 $movieContainer.classList.toggle('list-view', currentViewMode === 'list') }
-            document.querySelectorAll('#viewToggle button').forEach(b => b.addEventListener('click', function() { const m = this
-                    .dataset.viewMode; if (!m) return;
+            document.querySelectorAll('#viewToggle button').forEach(b => b.addEventListener('click', function() { const m = this.dataset.viewMode; if (!m) return;
                 currentViewMode = m;
                 settings.defaultView = currentViewMode;
                 saveSettings();
                 updateViewToggleUI();
                 renderMovies() }));
 
-            function getFilteredMovies() { let f = [...movies]; const term = $searchInput.value.toLowerCase().trim(); if (
-                    term) f = f.filter(m => m.title.toLowerCase().includes(term) || (m.originalTitle || '').toLowerCase()
-                    .includes(term) || (m.director || '').toLowerCase().includes(term) || (m.genres || []).some(g => g
-                        .toLowerCase().includes(term)) || (m.tags || []).some(t => t.toLowerCase().includes(term)) || (m
-                        .notes || '').toLowerCase().includes(term)); if (currentView === 'favorites') f = f.filter(m => m
-                    .favorite); if (currentView === 'want-to-watch') f = f.filter(m => m.status === 'want-to-watch'); if (
-                    currentView === 'watching') f = f.filter(m => m.status === 'watching'); if (currentView === 'watched') f =
-                    f.filter(m => m.status === 'watched'); if (currentView === 'unclassified') f = f.filter(m => m.status ===
-                    'unclassified'); if (currentView && currentView.startsWith('custom-')) { const cat = currentView.replace(
-                        'custom-', '');
-                    f = f.filter(m => m.status === cat) } if (currentView === 'dashboard') { f = f.sort((a, b) => new Date(b
-                        .dateAdded) - new Date(a.dateAdded)).slice(0, 12); return f } const s = $sortSelect.value;
-                f.sort((a, b) => { switch (s) { case 'newest':
-                        return new Date(b.dateAdded) - new Date(a.dateAdded); case 'oldest':
-                        return new Date(a.dateAdded) - new Date(b.dateAdded); case 'alpha-asc':
-                        return a.title.localeCompare(b.title); case 'alpha-desc':
-                        return b.title.localeCompare(a.title); case 'year-desc':
-                        return (b.releaseYear || 0) - (a.releaseYear || 0); case 'year-asc':
-                        return (a.releaseYear || 0) - (b.releaseYear || 0); case 'rating-desc':
-                        return (b.rating || 0) - (a.rating || 0); case 'rating-asc':
-                        return (a.rating || 0) - (b.rating || 0); default:
-                        return new Date(b.dateAdded) - new Date(a.dateAdded) } }); return f }
+            function getFilteredMovies() { let f = [...movies]; const term = $searchInput.value.toLowerCase().trim(); if (term) f = f.filter(m => m.title.toLowerCase().includes(term) || (m.originalTitle || '').toLowerCase().includes(term) || (m.director || '').toLowerCase().includes(term) || (m.genres || []).some(g => g.toLowerCase().includes(term)) || (m.tags || []).some(t => t.toLowerCase().includes(term)) || (m.notes || '').toLowerCase().includes(term)); if (currentView === 'favorites') f = f.filter(m => m.favorite); if (currentView === 'want-to-watch') f = f.filter(m => m.status === 'want-to-watch'); if (currentView === 'watching') f = f.filter(m => m.status === 'watching'); if (currentView === 'watched') f = f.filter(m => m.status === 'watched'); if (currentView === 'unclassified') f = f.filter(m => m.status === 'unclassified'); if (currentView && currentView.startsWith('custom-')) { const cat = currentView.replace('custom-', '');
+                    f = f.filter(m => m.status === cat) } if (currentView === 'dashboard') { f = f.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded)).slice(0, 12); return f } const s = $sortSelect.value;
+                f.sort((a, b) => { switch (s) { case 'newest': return new Date(b.dateAdded) - new Date(a.dateAdded); case 'oldest': return new Date(a.dateAdded) - new Date(b.dateAdded); case 'alpha-asc': return a.title.localeCompare(b.title); case 'alpha-desc': return b.title.localeCompare(a.title); case 'year-desc': return (b.releaseYear || 0) - (a.releaseYear || 0); case 'year-asc': return (a.releaseYear || 0) - (b.releaseYear || 0); case 'rating-desc': return (b.rating || 0) - (a.rating || 0); case 'rating-asc': return (a.rating || 0) - (b.rating || 0); default: return new Date(b.dateAdded) - new Date(a.dateAdded) } }); return f }
 
             function renderMovies() { const f = getFilteredMovies();
                 $movieContainer.innerHTML = ''; if (f.length === 0) { const isD = currentView === 'dashboard';
-                    $movieContainer.innerHTML = isD ?
-                        `<div class="empty-state"><div class="empty-icon"><i class="bi bi-film"></i></div><h3>Your collection is empty</h3><p>Start building your personal movie library.</p><button class="btn btn-primary" onclick="document.getElementById('addMovieBtn').click()"><i class="bi bi-plus-lg"></i> Add Your First Movie</button></div>` :
-                        `<div class="empty-state"><div class="empty-icon"><i class="bi bi-search"></i></div><h3>No movies found</h3><p>Try adjusting your search or filters.</p></div>`;
+                    $movieContainer.innerHTML = isD ? `<div class="empty-state"><div class="empty-icon"><i class="bi bi-film"></i></div><h3>Your collection is empty</h3><p>Start building your personal movie library.</p><button class="btn btn-primary" onclick="document.getElementById('addMovieBtn').click()"><i class="bi bi-plus-lg"></i> Add Your First Movie</button></div>` : `<div class="empty-state"><div class="empty-icon"><i class="bi bi-search"></i></div><h3>No movies found</h3><p>Try adjusting your search or filters.</p></div>`;
                     updateSubtitle(); return } const frag = document.createDocumentFragment();
                 f.forEach((m, i) => { const card = createMovieCard(m, i);
                     frag.appendChild(card) });
@@ -1908,65 +1839,42 @@
                 observeCards();
                 updateSubtitle() }
             let cardObserver = null;
-
-            function observeCards() { if (cardObserver) cardObserver.disconnect(); const cards = document.querySelectorAll(
-                    '.movie-card:not(.visible)'); if (cards.length === 0) return;
-                cardObserver = new IntersectionObserver(entries => { entries.forEach(en => { if (en.isIntersecting) { en.target
-                            .classList.add('visible');
-                        cardObserver.unobserve(en.target) } }) }, { threshold: 0.15, rootMargin: '0px 0px -20px 0px' });
+            function observeCards() { if (cardObserver) cardObserver.disconnect(); const cards = document.querySelectorAll('.movie-card:not(.visible)'); if (cards.length === 0) return;
+                cardObserver = new IntersectionObserver(entries => { entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('visible');
+                        cardObserver.unobserve(en.target) } }) }, { threshold: 0, rootMargin: '0px 0px -10px 0px' });
                 cards.forEach(c => cardObserver.observe(c)) }
 
             function createMovieCard(m, i) { const card = document.createElement('div');
                 card.className = 'movie-card'; if (currentViewMode === 'list') card.classList.add('list-card');
-                card.style.transitionDelay = `${Math.min(i*0.04,0.5)}s`;
-                card.addEventListener('click', e => { if (e.target.closest('button') || e.target.closest('.tag-pill-sm') || e
-                        .target.closest('input')) return;
-                    openPreviewModal(m.id) }); const posterHTML = m.posterUrl ?
-                    `<img src="${escHTML(m.posterUrl)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` :
-                    '',
-                    emojiD = m.posterUrl ? 'display:none;' : 'display:flex;'; const scMap = { 'want-to-watch': 'badge-want',
-                        watching: 'badge-watching', watched: 'badge-watched', unclassified: 'badge-unclassified' },
-                    slMap = { 'want-to-watch': 'Want', watching: 'Watching', watched: 'Watched',
-                    unclassified: 'Uncl.' }; let sc = scMap[m.status] || 'badge-unclassified',
-                    sl = slMap[m.status] || (settings.customCategories.includes(m.status) ? m.status : 'Uncl.'); if (!scMap[m
-                        .status] && settings.customCategories.includes(m.status)) { sc = 'badge-custom';
-                    sl = m.status } const favH = m.favorite ?
-                    '<span class="fav-indicator"><i class="bi bi-heart-fill"></i></span>' : '',
-                    rwH = m.wouldRewatch ? '<span class="rewatch-indicator"><i class="bi bi-arrow-repeat"></i></span>' : ''; const
-                    tags = m.tags || [],
-                    tH = tags.slice(0, 4).map(t => { const ic = getIconForTag(t); return `<span class="tag-pill-sm"><i class="${ic}"></i> ${escHTML(t)}</span>` })
-                    .join(''),
+                card.style.transitionDelay = `${Math.min(i*0.03, 0.25)}s`;
+                card.addEventListener('click', e => { if (e.target.closest('button') || e.target.closest('.tag-pill-sm') || e.target.closest('input')) return;
+                    openPreviewModal(m.id) }); const posterHTML = m.posterUrl ? `<img src="${escHTML(m.posterUrl)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` : '',
+                    emojiD = m.posterUrl ? 'display:none;' : 'display:flex;'; const scMap = { 'want-to-watch': 'badge-want', watching: 'badge-watching', watched: 'badge-watched', unclassified: 'badge-unclassified' },
+                    slMap = { 'want-to-watch': 'Want', watching: 'Watching', watched: 'Watched', unclassified: 'Uncl.' }; let sc = scMap[m.status] || 'badge-unclassified',
+                    sl = slMap[m.status] || (settings.customCategories.includes(m.status) ? m.status : 'Uncl.'); if (!scMap[m.status] && settings.customCategories.includes(m.status)) { sc = 'badge-custom';
+                    sl = m.status } const favH = m.favorite ? '<span class="fav-indicator"><i class="bi bi-heart-fill"></i></span>' : '',
+                    rwH = m.wouldRewatch ? '<span class="rewatch-indicator"><i class="bi bi-arrow-repeat"></i></span>' : ''; const tags = m.tags || [],
+                    tH = tags.slice(0, 4).map(t => { const ic = getIconForTag(t); return `<span class="tag-pill-sm"><i class="${ic}"></i> ${escHTML(t)}</span>` }).join(''),
                     more = tags.length > 4 ? `<span class="tag-pill-sm">+${tags.length-4}</span>` : '';
                 card.innerHTML = `<div class="poster">${posterHTML}<span class="poster-emoji" style="${emojiD}"><i class="bi bi-film" style="font-size:2.8rem;"></i></span>${favH}${rwH}</div><div class="card-body"><div class="card-title">${escHTML(m.title)}</div><div class="card-meta"><span>${m.releaseYear||'—'}</span><span class="status-badge ${sc}">${escHTML(sl)}</span>${m.rating>0?`<span class="card-rating"><i class="bi bi-star-fill"></i> ${m.rating}</span>`:''}</div>${(tH||more)?`<div class="card-tags">${tH}${more}</div>`:''}</div>`;
                 return card }
 
-            function getIconForTag(t) { if (GENRE_ICONS[t]) return GENRE_ICONS[t]; const l = t.toLowerCase(); for (const [k,
-                    ic] of Object.entries(GENRE_ICONS)) if (k.toLowerCase() === l) return ic; return DEFAULT_GENRE_ICON }
-
+            function getIconForTag(t) { if (GENRE_ICONS[t]) return GENRE_ICONS[t]; const l = t.toLowerCase(); for (const [k, ic] of Object.entries(GENRE_ICONS)) if (k.toLowerCase() === l) return ic; return DEFAULT_GENRE_ICON }
             function escHTML(s) { const d = document.createElement('div');
                 d.textContent = s; return d.innerHTML }
             let previewMovieId = null;
-
             function openPreviewModal(id) { const m = movies.find(x => x.id === id); if (!m) return;
                 previewMovieId = id;
-                $previewTitle.innerHTML = `<i class="bi bi-film"></i> ${escHTML(m.title)}`; const pH = m.posterUrl ?
-                    `<img src="${escHTML(m.posterUrl)}" class="preview-poster" alt="Poster" onerror="this.style.display='none';">` :
-                    '',
-                    tH = (m.tags || []).map(t => { const ic = getIconForTag(t); return `<span class="tag-pill-sm"><i class="${ic}"></i> ${escHTML(t)}</span>` })
-                    .join(''),
-                    stMap = { 'want-to-watch': 'Want to Watch', watching: 'Watching', watched: 'Watched',
-                        unclassified: 'Unclassified' },
+                $previewTitle.innerHTML = `<i class="bi bi-film"></i> ${escHTML(m.title)}`; const pH = m.posterUrl ? `<img src="${escHTML(m.posterUrl)}" class="preview-poster" alt="Poster" onerror="this.style.display='none';">` : '',
+                    tH = (m.tags || []).map(t => { const ic = getIconForTag(t); return `<span class="tag-pill-sm"><i class="${ic}"></i> ${escHTML(t)}</span>` }).join(''),
+                    stMap = { 'want-to-watch': 'Want to Watch', watching: 'Watching', watched: 'Watched', unclassified: 'Unclassified' },
                     stL = stMap[m.status] || m.status;
-                $previewContent.innerHTML =
-                    `${pH}<div class="preview-detail"><span><span class="label">Title:</span> <span class="value">${escHTML(m.title)}</span></span>${m.originalTitle?`<span><span class="label">Original:</span> <span class="value">${escHTML(m.originalTitle)}</span></span>`:''}${m.releaseYear?`<span><span class="label">Year:</span> <span class="value">${m.releaseYear}</span></span>`:''}${m.runtime?`<span><span class="label">Runtime:</span> <span class="value">${escHTML(m.runtime)}</span></span>`:''}${m.director?`<span><span class="label">Director:</span> <span class="value">${escHTML(m.director)}</span></span>`:''}${m.language?`<span><span class="label">Language:</span> <span class="value">${escHTML(m.language)}</span></span>`:''}<span><span class="label">Status:</span> <span class="value">${escHTML(stL)}</span></span>${m.rating>0?`<span><span class="label">Rating:</span> <span class="value">${m.rating}/10</span></span>`:''}<span><span class="label">Favorite:</span> <span class="value">${m.favorite?'❤️ Yes':'No'}</span></span><span><span class="label">Rewatch:</span> <span class="value">${m.wouldRewatch?'🔄 Yes':'No'}</span></span>${m.genres&&m.genres.length?`<span><span class="label">Genres:</span> <span class="value">${m.genres.map(g=>escHTML(g)).join(', ')}</span></span>`:''}</div>${m.notes?`<div class="preview-notes">${escHTML(m.notes)}</div>`:''}${tH?`<div class="preview-tags">${tH}</div>`:''}<div style="font-size:0.7rem;color:var(--text-tertiary);margin-top:8px;">Added: ${new Date(m.dateAdded).toLocaleDateString()}${m.lastEdited?` · Last edited: ${new Date(m.lastEdited).toLocaleDateString()}`:''}</div>`;
+                $previewContent.innerHTML = `${pH}<div class="preview-detail"><span><span class="label">Title:</span> <span class="value">${escHTML(m.title)}</span></span>${m.originalTitle?`<span><span class="label">Original:</span> <span class="value">${escHTML(m.originalTitle)}</span></span>`:''}${m.releaseYear?`<span><span class="label">Year:</span> <span class="value">${m.releaseYear}</span></span>`:''}${m.runtime?`<span><span class="label">Runtime:</span> <span class="value">${escHTML(m.runtime)}</span></span>`:''}${m.director?`<span><span class="label">Director:</span> <span class="value">${escHTML(m.director)}</span></span>`:''}${m.language?`<span><span class="label">Language:</span> <span class="value">${escHTML(m.language)}</span></span>`:''}<span><span class="label">Status:</span> <span class="value">${escHTML(stL)}</span></span>${m.rating>0?`<span><span class="label">Rating:</span> <span class="value">${m.rating}/10</span></span>`:''}<span><span class="label">Favorite:</span> <span class="value">${m.favorite?'❤️ Yes':'No'}</span></span><span><span class="label">Rewatch:</span> <span class="value">${m.wouldRewatch?'🔄 Yes':'No'}</span></span>${m.genres&&m.genres.length?`<span><span class="label">Genres:</span> <span class="value">${m.genres.map(g=>escHTML(g)).join(', ')}</span></span>`:''}</div>${m.notes?`<div class="preview-notes">${escHTML(m.notes)}</div>`:''}${tH?`<div class="preview-tags">${tH}</div>`:''}<div style="font-size:0.7rem;color:var(--text-tertiary);margin-top:8px;">Added: ${new Date(m.dateAdded).toLocaleDateString()}${m.lastEdited?` · Last edited: ${new Date(m.lastEdited).toLocaleDateString()}`:''}</div>`;
                 $previewModalOverlay.classList.add('open');
                 document.body.style.overflow = 'hidden' }
-
-            function closePreviewModal() { $previewModalOverlay.classList.remove('open'); if (!isScrollLocked) document.body
-                    .style.overflow = '' }
+            function closePreviewModal() { $previewModalOverlay.classList.remove('open'); if (!isScrollLocked) document.body.style.overflow = '' }
             $previewCloseBtn.addEventListener('click', closePreviewModal);
-            $previewModalOverlay.addEventListener('click', e => { if (e.target === $previewModalOverlay)
-            closePreviewModal() });
+            $previewModalOverlay.addEventListener('click', e => { if (e.target === $previewModalOverlay) closePreviewModal() });
             $previewEditBtn.addEventListener('click', () => { const id = previewMovieId; if (id) { closePreviewModal();
                     setTimeout(() => openEditModal(id), 150) } });
 
@@ -1984,7 +1892,6 @@
                 $movieModalOverlay.classList.add('open');
                 document.body.style.overflow = 'hidden';
                 setTimeout(() => $('#mTitle').focus(), 350) }
-
             function openEditModal(id) { const m = movies.find(x => x.id === id); if (!m) return;
                 editingId = id;
                 tempTags = [...(m.tags || [])];
@@ -2012,16 +1919,11 @@
                 renderTagSuggestions();
                 $movieModalOverlay.classList.add('open');
                 document.body.style.overflow = 'hidden' }
-
-            function closeModal() { $movieModalOverlay.classList.remove('open'); if (!isScrollLocked) document.body.style
-                    .overflow = '';
+            function closeModal() { $movieModalOverlay.classList.remove('open'); if (!isScrollLocked) document.body.style.overflow = '';
                 editingId = null;
                 tempTags = [];
                 clearModalFields() }
-
-            function clearModalFields() { ['mId', 'mTitle', 'mOrigTitle', 'mYear', 'mRuntime', 'mDirector', 'mGenres',
-                    'mLanguage', 'mPosterUrl', 'mBannerUrl', 'mNotes', 'mDateAdded', 'mTagInput'
-                ].forEach(id => $('#' + id).value = '');
+            function clearModalFields() { ['mId', 'mTitle', 'mOrigTitle', 'mYear', 'mRuntime', 'mDirector', 'mGenres', 'mLanguage', 'mPosterUrl', 'mBannerUrl', 'mNotes', 'mDateAdded', 'mTagInput'].forEach(id => $('#' + id).value = '');
                 $('#mStatus').value = 'watched';
                 $('#mFavorite').checked = false;
                 $('#mRewatch').checked = false;
@@ -2029,7 +1931,6 @@
                 tempTags = [];
                 renderTagPills();
                 renderTagSuggestions() }
-
             function updateRatingSliderFromSettings() { const s = $('#mRating');
                 s.min = settings.ratingMin;
                 s.max = settings.ratingMax;
@@ -2038,54 +1939,34 @@
                 $('#ratingLeftLabel').textContent = settings.ratingLeftLabel;
                 $('#ratingRightLabel').textContent = settings.ratingRightLabel;
                 updateRatingDisplay() }
-
             function updateRatingDisplay() { const v = parseFloat($('#mRating').value);
                 $('#ratingDisplay').textContent = settings.ratingStep < 1 ? v.toFixed(1) : Math.round(v) }
             $('#mRating').addEventListener('input', updateRatingDisplay);
-
-            function renderTagPills() { $tagPillsContainer.innerHTML = tempTags.map(t => { const ic = getIconForTag(t); return `<span class="tag-pill" data-tag="${escHTML(t)}"><i class="${ic}"></i> ${escHTML(t)} <span class="tag-remove">&times;</span></span>` })
-                    .join('');
-                $tagPillsContainer.querySelectorAll('.tag-remove').forEach(sp => { sp.parentElement.addEventListener('click',
-                    e => { e.stopPropagation(); const t = sp.parentElement.dataset.tag;
+            function renderTagPills() { $tagPillsContainer.innerHTML = tempTags.map(t => { const ic = getIconForTag(t); return `<span class="tag-pill" data-tag="${escHTML(t)}"><i class="${ic}"></i> ${escHTML(t)} <span class="tag-remove">&times;</span></span>` }).join('');
+                $tagPillsContainer.querySelectorAll('.tag-remove').forEach(sp => { sp.parentElement.addEventListener('click', e => { e.stopPropagation(); const t = sp.parentElement.dataset.tag;
                         tempTags = tempTags.filter(x => x !== t);
                         renderTagPills();
                         renderTagSuggestions() }) }) }
-
             function renderTagSuggestions() { const added = new Set(tempTags.map(t => t.toLowerCase())),
                     sug = ALL_GENRES.filter(g => !added.has(g.toLowerCase()));
-                $tagSuggestionsContainer.innerHTML = sug.map(g => { const ic = GENRE_ICONS[g] || DEFAULT_GENRE_ICON; return `<span class="tag-suggestion" data-genre="${escHTML(g)}"><i class="${ic}"></i> ${escHTML(g)}</span>` })
-                    .join('');
-                $tagSuggestionsContainer.querySelectorAll('.tag-suggestion').forEach(el => { el.addEventListener('click',
-                    () => { const g = el.dataset.genre; if (!tempTags.includes(g)) { tempTags.push(g);
+                $tagSuggestionsContainer.innerHTML = sug.map(g => { const ic = GENRE_ICONS[g] || DEFAULT_GENRE_ICON; return `<span class="tag-suggestion" data-genre="${escHTML(g)}"><i class="${ic}"></i> ${escHTML(g)}</span>` }).join('');
+                $tagSuggestionsContainer.querySelectorAll('.tag-suggestion').forEach(el => { el.addEventListener('click', () => { const g = el.dataset.genre; if (!tempTags.includes(g)) { tempTags.push(g);
                         renderTagPills();
                         renderTagSuggestions() } }) }) }
-            $mTagInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const v = e.target.value
-                    .trim(); if (v && !tempTags.includes(v)) { tempTags.push(v);
+            $mTagInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const v = e.target.value.trim(); if (v && !tempTags.includes(v)) { tempTags.push(v);
                         renderTagPills();
                         renderTagSuggestions() }
                     e.target.value = '' } });
-
-            function saveMovieFromModal() { const title = $('#mTitle').value.trim(); if (!title) { showToast(
-                    'Please enter a title.'); return } const now = new Date().toISOString(),
+            function saveMovieFromModal() { const title = $('#mTitle').value.trim(); if (!title) { showToast('Please enter a title.'); return } const now = new Date().toISOString(),
                     sv = $('#mStatus').value,
-                    md = { id: editingId || genId(), title, originalTitle: $('#mOrigTitle').value.trim(), posterUrl: $(
-                            '#mPosterUrl').value.trim(), bannerUrl: $('#mBannerUrl').value.trim(), releaseYear: parseInt($(
-                            '#mYear').value) || null, runtime: $('#mRuntime').value.trim(), director: $('#mDirector').value
-                        .trim(), genres: $('#mGenres').value.split(',').map(g => g.trim()).filter(Boolean), language: $(
-                            '#mLanguage').value.trim(), status: sv, rating: parseFloat($('#mRating').value) || 0,
-                        favorite: $('#mFavorite').checked, wouldRewatch: $('#mRewatch').checked, notes: $('#mNotes').value
-                        .trim(), tags: [...tempTags], dateAdded: editingId ? ($('#mDateAdded').value || now) : now,
-                        lastEdited: now }; if (editingId) { const idx = movies.findIndex(m => m.id === editingId); if (idx >=
-                        0) { movies[idx] = md;
+                    md = { id: editingId || genId(), title, originalTitle: $('#mOrigTitle').value.trim(), posterUrl: $('#mPosterUrl').value.trim(), bannerUrl: $('#mBannerUrl').value.trim(), releaseYear: parseInt($('#mYear').value) || null, runtime: $('#mRuntime').value.trim(), director: $('#mDirector').value.trim(), genres: $('#mGenres').value.split(',').map(g => g.trim()).filter(Boolean), language: $('#mLanguage').value.trim(), status: sv, rating: parseFloat($('#mRating').value) || 0, favorite: $('#mFavorite').checked, wouldRewatch: $('#mRewatch').checked, notes: $('#mNotes').value.trim(), tags: [...tempTags], dateAdded: editingId ? ($('#mDateAdded').value || now) : now, lastEdited: now }; if (editingId) { const idx = movies.findIndex(m => m.id === editingId); if (idx >= 0) { movies[idx] = md;
                         showToast('Movie updated!') } else { movies.unshift(md);
                         showToast('Movie added!') } } else { movies.unshift(md);
                     showToast('Movie added!') }
                 saveMovies();
                 closeModal();
                 renderMovies(); if (currentView === 'dashboard') updateUIForView() }
-
-            function deleteMovieFromModal() { if (!editingId) return; const m = movies.find(x => x.id === editingId); if (!m)
-                    return;
+            function deleteMovieFromModal() { if (!editingId) return; const m = movies.find(x => x.id === editingId); if (!m) return;
                 lastDeletedMovie = { ...m };
                 movies = movies.filter(x => x.id !== editingId);
                 saveMovies();
@@ -2101,98 +1982,58 @@
             $('#deleteMovieBtn').addEventListener('click', deleteMovieFromModal);
             $addMovieBtn.addEventListener('click', openAddModal);
             $movieModalOverlay.addEventListener('click', e => { if (e.target === $movieModalOverlay) closeModal() });
-            document.addEventListener('keydown', e => { if (e.key === 'Escape' && $movieModalOverlay.classList.contains(
-                    'open')) closeModal() });
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && $movieModalOverlay.classList.contains('open')) closeModal() });
             $searchInput.addEventListener('input', () => { if (currentView !== 'settings') renderMovies() });
             $sortSelect.addEventListener('change', () => { settings.defaultSort = $sortSelect.value;
                 saveSettings(); if (currentView !== 'settings') renderMovies() });
-
-            function renderSettings() { $settingsContainer.innerHTML =
-                    `<h2><i class="bi bi-gear"></i> Settings</h2><div class="setting-row"><span class="setting-label">Theme</span><select id="settingTheme" style="padding:8px 14px;border-radius:30px;"><option value="dark" ${settings.theme==='dark'?'selected':''}>Dark</option><option value="light" ${settings.theme==='light'?'selected':''}>Light</option></select></div><div class="setting-row"><span class="setting-label">Accent Color</span><input type="color" id="settingAccent" value="${settings.accentColor}"></div><div class="setting-row"><span class="setting-label">Rating Range</span><div style="display:flex;gap:6px;"><input type="number" id="settingRatingMin" value="${settings.ratingMin}" style="width:55px;"><span>to</span><input type="number" id="settingRatingMax" value="${settings.ratingMax}" style="width:55px;"><span>step</span><input type="number" id="settingRatingStep" value="${settings.ratingStep}" step="0.1" min="0.1" style="width:55px;"></div></div><div class="setting-row"><span class="setting-label">Rating Labels</span><div style="display:flex;gap:8px;flex:1;"><input type="text" id="settingLeftLabel" value="${escHTML(settings.ratingLeftLabel)}"><input type="text" id="settingRightLabel" value="${escHTML(settings.ratingRightLabel)}"></div></div><div class="setting-row"><button class="btn btn-primary" id="exportSettingsBtn"><i class="bi bi-download"></i> Export</button><button class="btn btn-ghost" id="importSettingsBtn"><i class="bi bi-upload"></i> Import</button></div><button class="btn btn-primary" id="saveSettingsBtn" style="margin-top:20px;"><i class="bi bi-check-lg"></i> Save Settings</button>`;
+            function renderSettings() { $settingsContainer.innerHTML = `<h2><i class="bi bi-gear"></i> Settings</h2><div class="setting-row"><span class="setting-label">Theme</span><select id="settingTheme" style="padding:8px 14px;border-radius:30px;"><option value="dark" ${settings.theme==='dark'?'selected':''}>Dark</option><option value="light" ${settings.theme==='light'?'selected':''}>Light</option></select></div><div class="setting-row"><span class="setting-label">Accent Color</span><input type="color" id="settingAccent" value="${settings.accentColor}"></div><div class="setting-row"><span class="setting-label">Rating Range</span><div style="display:flex;gap:6px;"><input type="number" id="settingRatingMin" value="${settings.ratingMin}" style="width:55px;"><span>to</span><input type="number" id="settingRatingMax" value="${settings.ratingMax}" style="width:55px;"><span>step</span><input type="number" id="settingRatingStep" value="${settings.ratingStep}" step="0.1" min="0.1" style="width:55px;"></div></div><div class="setting-row"><span class="setting-label">Rating Labels</span><div style="display:flex;gap:8px;flex:1;"><input type="text" id="settingLeftLabel" value="${escHTML(settings.ratingLeftLabel)}"><input type="text" id="settingRightLabel" value="${escHTML(settings.ratingRightLabel)}"></div></div><div class="setting-row"><button class="btn btn-primary" id="exportSettingsBtn"><i class="bi bi-download"></i> Export</button><button class="btn btn-ghost" id="importSettingsBtn"><i class="bi bi-upload"></i> Import</button></div><button class="btn btn-primary" id="saveSettingsBtn" style="margin-top:20px;"><i class="bi bi-check-lg"></i> Save Settings</button>`;
                 $('#saveSettingsBtn').addEventListener('click', saveSettingsFromPanel);
                 $('#exportSettingsBtn').addEventListener('click', exportLibrary);
                 $('#importSettingsBtn').addEventListener('click', () => $importFileInput.click()) }
-
             function saveSettingsFromPanel() { settings.theme = $('#settingTheme').value;
                 settings.accentColor = $('#settingAccent').value;
                 settings.ratingMin = parseInt($('#settingRatingMin').value) || 0;
                 settings.ratingMax = parseInt($('#settingRatingMax').value) || 10;
                 settings.ratingStep = parseFloat($('#settingRatingStep').value) || 1;
                 settings.ratingLeftLabel = $('#settingLeftLabel').value.trim() || 'Not For Me';
-                settings.ratingRightLabel = $('#settingRightLabel').value.trim() || 'Masterpiece'; if (settings.ratingMin >=
-                    settings.ratingMax) settings.ratingMax = settings.ratingMin + 1; if (settings.ratingStep <= 0) settings
-                    .ratingStep = 1;
+                settings.ratingRightLabel = $('#settingRightLabel').value.trim() || 'Masterpiece'; if (settings.ratingMin >= settings.ratingMax) settings.ratingMax = settings.ratingMin + 1; if (settings.ratingStep <= 0) settings.ratingStep = 1;
                 saveSettings();
                 applySettings();
                 updateRatingSliderFromSettings();
                 showToast('Settings saved!') }
-
-            function exportLibrary() { const data = JSON.stringify({ movies, settings, exportDate: new Date().toISOString() },
-                    null, 2); const blob = new Blob([data], { type: 'application/json' }); const url = URL.createObjectURL(
-                    blob); const a = document.createElement('a');
+            function exportLibrary() { const data = JSON.stringify({ movies, settings, exportDate: new Date().toISOString() }, null, 2); const blob = new Blob([data], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a');
                 a.href = url;
                 a.download = `jana-movies-backup-${new Date().toISOString().slice(0,10)}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
                 showToast('Library exported!') }
-            $importFileInput.addEventListener('change', e => { const file = e.target.files[0]; if (!file) return; const reader =
-                    new FileReader();
-                reader.onload = ev => { try { const data = JSON.parse(ev.target.result); if (data.movies && Array.isArray(data
-                            .movies)) { movies = data.movies.map(m => ({ ...m, status: VALID_STATUSES.includes(m.status) ?
-                                m.status : 'unclassified', tags: Array.isArray(m.tags) ? m.tags : [] })); if (data
-                            .settings) settings = { ...settings, ...data.settings }; if (!Array.isArray(settings
-                            .customCategories)) settings.customCategories = [];
+            $importFileInput.addEventListener('change', e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+                reader.onload = ev => { try { const data = JSON.parse(ev.target.result); if (data.movies && Array.isArray(data.movies)) { movies = data.movies.map(m => ({ ...m, status: VALID_STATUSES.includes(m.status) ? m.status : 'unclassified', tags: Array.isArray(m.tags) ? m.tags : [] })); if (data.settings) settings = { ...settings, ...data.settings }; if (!Array.isArray(settings.customCategories)) settings.customCategories = [];
                         saveMovies();
                         saveSettings();
                         applySettings();
                         renderMovies(); if (currentView === 'dashboard' || currentView === 'settings') updateUIForView();
-                        showToast('Library imported!') } else showToast('Invalid backup file.') } catch (err) { showToast(
-                        'Error reading file.') } };
+                        showToast('Library imported!') } else showToast('Invalid backup file.') } catch (err) { showToast('Error reading file.') } };
                 reader.readAsText(file);
                 $importFileInput.value = '' });
-
-            // ⌘K shortcut with fix #6 (check visibility)
-            document.addEventListener('keydown', e => {
-                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                    e.preventDefault();
-                    if (!$searchWrap.classList.contains('hidden')) {
-                        $searchInput.focus();
-                        $searchInput.select();
-                    }
-                }
-            });
+            document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); if (!$searchWrap.classList.contains('hidden')) { $searchInput.focus();
+                        $searchInput.select() } } });
 
             let particles = [],
                 particleAnimId = null,
                 particleResizeHandler = null;
-
-            function initParticles() {
-                if (particleAnimId) cancelAnimationFrame(particleAnimId);
-                if (particleResizeHandler) window.removeEventListener('resize', particleResizeHandler);
-                const canvas = $particleCanvas,
+            function initParticles() { if (particleAnimId) cancelAnimationFrame(particleAnimId); if (particleResizeHandler) window.removeEventListener('resize', particleResizeHandler); const canvas = $particleCanvas,
                     ctx = canvas.getContext('2d'),
-                    aR = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() ||
-                    '212,149,168',
+                    aR = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '212,149,168',
                     pc = window.innerWidth < 600 ? 25 : 40;
-                particles = [];
-                for (let i = 0; i < pc; i++) particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.35,
-                    vy: (Math.random() - 0.5) * 0.35,
-                    size: Math.random() * 5 + 2,
-                    opacity: Math.random() * 0.35 + 0.25
-                });
-
+                particles = []; for (let i = 0; i < pc; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35, size: Math.random() * 5 + 2, opacity: Math.random() * 0.35 + 0.25 });
                 function resize() { canvas.width = window.innerWidth;
                     canvas.height = window.innerHeight }
                 particleResizeHandler = resize;
                 window.addEventListener('resize', resize);
                 resize();
-
                 function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); for (let p of particles) { p.x += p.vx;
-                        p.y += p.vy; if (p.x < -10) p.x = canvas.width + 10; if (p.x > canvas.width + 10) p.x = -10; if (p.y <
-                            -10) p.y = canvas.height + 10; if (p.y > canvas.height + 10) p.y = -10;
+                        p.y += p.vy; if (p.x < -10) p.x = canvas.width + 10; if (p.x > canvas.width + 10) p.x = -10; if (p.y < -10) p.y = canvas.height + 10; if (p.y > canvas.height + 10) p.y = -10;
                         ctx.beginPath(); const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.5);
                         g.addColorStop(0, `rgba(${aR},${p.opacity*1.4})`);
                         g.addColorStop(0.5, `rgba(${aR},${p.opacity*0.7})`);
@@ -2201,44 +2042,33 @@
                         ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
                         ctx.fill() }
                     particleAnimId = requestAnimationFrame(draw) }
-                draw();
-            }
-
+                draw() }
             function updateMainPadding() { if (window.innerWidth <= 900) { const h = $topBar.offsetHeight;
                     $mainContent.style.paddingTop = (h + 14) + 'px';
-                    document.documentElement.style.setProperty('--topbar-mobile-height', h + 'px') } else { $mainContent.style
-                        .paddingTop = '';
+                    document.documentElement.style.setProperty('--topbar-mobile-height', h + 'px') } else { $mainContent.style.paddingTop = '';
                     document.documentElement.style.setProperty('--topbar-mobile-height', '') } }
             const topbarRO = new ResizeObserver(() => updateMainPadding());
             topbarRO.observe($topBar);
-            window.addEventListener('resize', () => { updateMainPadding(); if (window.innerWidth > 900) { if (isScrollLocked)
-                    unlockBodyScroll(); if ($sidebar.classList.contains('open-mobile')) { $sidebar.classList.remove(
-                        'open-mobile');
-                    $sidebarOverlay.classList.remove('visible') } if (settings.sidebarCollapsed) { $sidebar.classList.add(
-                        'collapsed');
+            window.addEventListener('resize', () => { updateMainPadding(); if (window.innerWidth > 900) { if (isScrollLocked) unlockBodyScroll(); if ($sidebar.classList.contains('open-mobile')) { $sidebar.classList.remove('open-mobile');
+                    $sidebarOverlay.classList.remove('visible') } if (settings.sidebarCollapsed) { $sidebar.classList.add('collapsed');
                     $mainContent.style.marginLeft = '0' } else { $sidebar.classList.remove('collapsed');
-                    $mainContent.style.marginLeft = '' } } else { if (isScrollLocked && !$sidebar.classList.contains(
-                        'open-mobile')) unlockBodyScroll();
+                    $mainContent.style.marginLeft = '' } } else { if (isScrollLocked && !$sidebar.classList.contains('open-mobile')) unlockBodyScroll();
                 $sidebar.classList.remove('collapsed');
                 $mainContent.style.marginLeft = '0' } });
-
             function init() { loadSettings();
                 loadMovies();
                 applySettings();
                 updateUIForView();
                 updateRatingSliderFromSettings(); if (window.innerWidth <= 900) { $mainContent.style.marginLeft = '0';
-                    $sidebar.classList.remove('collapsed') } else if (settings.sidebarCollapsed) { $sidebar.classList.add(
-                        'collapsed');
+                    $sidebar.classList.remove('collapsed') } else if (settings.sidebarCollapsed) { $sidebar.classList.add('collapsed');
                     $mainContent.style.marginLeft = '0' }
                 renderCustomCategories();
                 updateStatusDropdown();
                 renderTagSuggestions();
                 setTimeout(observeCards, 400);
-                updateMainPadding();
-                // Duplicate initParticles removed (fix #3)
-            }
+                updateMainPadding(); }
             init();
-            console.log('🎬 Jana\'s Movies — polished with subtle animations & iOS fixes.');
+            console.log('🎬 Jana\'s Movies — animation now smooth and prompt.');
         })();
     </script>
 </body>
