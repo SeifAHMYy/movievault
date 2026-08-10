@@ -51,6 +51,7 @@
             --topbar-height: 72px;
             --topbar-mobile-height: 68px;
             --accent-rgb: 212, 149, 168;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         .light-mode {
@@ -142,8 +143,8 @@
             height: 100%;
             z-index: 0;
             pointer-events: none;
-            opacity: 0.35;
-            filter: blur(3px);
+            opacity: 0.55;
+            filter: blur(2px);
             transition: opacity var(--transition-smooth);
         }
 
@@ -158,7 +159,7 @@
             z-index: 100;
             display: flex;
             flex-direction: column;
-            padding: 24px 12px 16px;
+            padding: 24px 12px calc(16px + var(--safe-bottom));
             gap: 2px;
             transition: transform var(--transition-smooth), opacity var(--transition-smooth);
             overflow-y: auto;
@@ -179,6 +180,14 @@
             -webkit-backdrop-filter: blur(48px) saturate(160%);
             z-index: -1;
             border-right: 1px solid var(--border);
+        }
+        .sidebar::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--bg-root);
+            opacity: 0.25;
+            z-index: -2;
         }
         .light-mode .sidebar {
             background: rgba(244, 241, 243, 0.92);
@@ -475,14 +484,12 @@
             flex-wrap: wrap;
             margin-bottom: 30px;
             padding: 12px 20px;
-            background: var(--bg-root);
-            transition: background var(--transition-smooth), box-shadow var(--transition-smooth);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            background: rgba(var(--bg-root-rgb), 0.7);
+            background: rgba(var(--bg-root-rgb), 0.55);
+            backdrop-filter: blur(18px) saturate(160%);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
             border-radius: var(--radius);
-            border: none;
-            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.15);
             position: relative;
             z-index: 20;
         }
@@ -490,12 +497,11 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: var(--bg-glass-light);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: -1;
             border-radius: var(--radius);
-            border: none;
         }
         .top-bar h1 {
             font-weight: 700;
@@ -526,7 +532,7 @@
             padding: 11px 16px 11px 42px;
             border-radius: var(--radius-full);
             border: none;
-            background: var(--bg-surface);
+            background: rgba(var(--bg-root-rgb), 0.45);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             color: var(--text-primary);
@@ -537,10 +543,10 @@
             outline: none;
             -webkit-appearance: none;
             appearance: none;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
         }
         .search-wrap input:focus {
-            box-shadow: 0 0 0 3px var(--accent-subtle), var(--shadow-sm);
+            box-shadow: 0 0 0 3px var(--accent-subtle), 0 1px 8px rgba(0, 0, 0, 0.2);
         }
         .search-wrap input:focus+i,
         .search-wrap input:focus~i {
@@ -585,11 +591,11 @@
             transition: transform 0.1s ease;
         }
         .btn-ghost {
-            background: var(--bg-glass-light);
+            background: rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             color: var(--text-secondary);
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: var(--shadow-sm);
         }
         .btn-ghost:hover {
@@ -622,14 +628,14 @@
 
         .view-toggle {
             display: flex;
-            background: var(--bg-surface);
+            background: rgba(var(--bg-root-rgb), 0.45);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: var(--radius-full);
             padding: 3px;
             gap: 1px;
-            border: none;
-            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
         }
         .view-toggle button {
             all: unset;
@@ -651,11 +657,11 @@
             font-size: 1rem;
         }
         .view-toggle button.active {
-            background: var(--bg-card);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             color: var(--text-primary);
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
             font-weight: 600;
         }
 
@@ -663,8 +669,8 @@
         .sort-select {
             padding: 8px 15px;
             border-radius: var(--radius-full);
-            border: none;
-            background: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(var(--bg-root-rgb), 0.45);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             color: var(--text-primary);
@@ -682,10 +688,10 @@
             background-position: right 12px center;
             padding-right: 36px;
             min-height: 40px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
         }
         .sort-select:focus {
-            box-shadow: 0 0 0 3px var(--accent-subtle), var(--shadow-sm);
+            box-shadow: 0 0 0 3px var(--accent-subtle), 0 1px 8px rgba(0, 0, 0, 0.2);
         }
 
         /* ─── MOVIE GRID ─── */
@@ -998,7 +1004,7 @@
             padding: 10px 14px;
             border-radius: var(--radius-sm);
             border: 1.5px solid var(--border-visible);
-            background: var(--bg-surface);
+            background: rgba(var(--bg-root-rgb), 0.45);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             color: var(--text-primary);
@@ -1087,7 +1093,7 @@
             border-radius: 5px;
             -webkit-appearance: none;
             appearance: none;
-            background: var(--bg-surface);
+            background: rgba(var(--bg-root-rgb), 0.45);
             border: 1.5px solid var(--border-visible);
             transition: all var(--transition-fast);
             position: relative;
@@ -1182,7 +1188,7 @@
             border-radius: var(--radius-full);
             font-size: 0.72rem;
             font-weight: 500;
-            background: var(--bg-surface);
+            background: rgba(var(--bg-root-rgb), 0.5);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             color: var(--text-secondary);
@@ -1214,7 +1220,7 @@
         /* ─── TOAST ─── */
         .toast-container {
             position: fixed;
-            bottom: 24px;
+            bottom: calc(24px + var(--safe-bottom));
             right: 24px;
             z-index: 300;
             display: flex;
@@ -1313,7 +1319,7 @@
             padding: 8px 12px;
             border-radius: var(--radius-sm);
             border: 1.5px solid var(--border-visible);
-            background: var(--bg-surface);
+            background: rgba(var(--bg-root-rgb), 0.45);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             color: var(--text-primary);
@@ -1422,14 +1428,11 @@
                 border-radius: 0 0 24px 24px;
                 padding: 12px 16px 14px;
                 min-height: auto;
-                background: rgba(var(--bg-root-rgb), 0.78);
-                backdrop-filter: blur(28px) saturate(180%);
-                -webkit-backdrop-filter: blur(28px) saturate(180%);
-                box-shadow:
-                    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-                    0 4px 24px rgba(0, 0, 0, 0.5),
-                    0 12px 40px rgba(0, 0, 0, 0.3);
-                border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+                background: rgba(var(--bg-root-rgb), 0.45);
+                backdrop-filter: blur(32px) saturate(180%);
+                -webkit-backdrop-filter: blur(32px) saturate(180%);
+                box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 4px 30px rgba(0, 0, 0, 0.4);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
                 display: flex;
                 flex-direction: column;
                 gap: 12px;
@@ -1444,9 +1447,9 @@
                 height: 1px;
                 background: linear-gradient(90deg,
                         transparent 0%,
-                        rgba(var(--accent-rgb), 0.4) 15%,
-                        rgba(var(--accent-rgb), 0.7) 40%,
-                        rgba(var(--accent-rgb), 0.4) 65%,
+                        rgba(var(--accent-rgb), 0.5) 15%,
+                        rgba(var(--accent-rgb), 0.8) 40%,
+                        rgba(var(--accent-rgb), 0.5) 65%,
                         transparent 100%);
                 z-index: 2;
                 pointer-events: none;
@@ -1455,15 +1458,11 @@
                 content: '';
                 position: absolute;
                 inset: 0;
-                background: linear-gradient(180deg,
-                        rgba(255, 255, 255, 0.04) 0%,
-                        rgba(255, 255, 255, 0.01) 30%,
-                        transparent 100%);
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
+                background: rgba(255, 255, 255, 0.03);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
                 z-index: -1;
                 border-radius: 0 0 24px 24px;
-                border: none;
             }
             .top-bar .top-row {
                 display: flex;
@@ -1477,7 +1476,7 @@
                 font-weight: 700;
                 letter-spacing: -0.03em;
                 white-space: nowrap;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             }
             .top-bar .search-wrap {
                 order: unset;
@@ -1488,28 +1487,28 @@
             .search-wrap input {
                 padding: 12px 16px 12px 42px;
                 font-size: 0.85rem;
-                background: rgba(var(--bg-root-rgb), 0.6);
-                backdrop-filter: blur(18px);
-                -webkit-backdrop-filter: blur(18px);
-                border: 1px solid rgba(255, 255, 255, 0.08);
+                background: rgba(var(--bg-root-rgb), 0.5);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
                 border-radius: var(--radius-full);
-                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+                box-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
             }
             .top-bar .controls-row {
                 display: flex;
                 align-items: center;
                 gap: 10px;
                 flex-wrap: wrap;
-                justify-content: flex-end;
+                justify-content: center;
                 padding-left: 48px;
             }
             .view-toggle {
                 background: rgba(var(--bg-root-rgb), 0.55);
-                backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
+                backdrop-filter: blur(18px);
+                -webkit-backdrop-filter: blur(18px);
                 border-radius: var(--radius-full);
                 padding: 2px;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
             }
             .view-toggle button {
                 padding: 7px 14px;
@@ -1517,7 +1516,7 @@
                 border-radius: var(--radius-full);
             }
             .view-toggle button.active {
-                background: rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.12);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
             }
@@ -1527,11 +1526,11 @@
                 padding-right: 34px;
                 min-height: 36px;
                 background: rgba(var(--bg-root-rgb), 0.55);
-                backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
+                backdrop-filter: blur(18px);
+                -webkit-backdrop-filter: blur(18px);
                 border-radius: var(--radius-full);
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-                border: none;
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.06);
             }
             #addMovieBtn {
                 padding: 8px 18px;
@@ -1557,7 +1556,7 @@
                 grid-template-columns: 1fr;
             }
             .toast-container {
-                bottom: 10px;
+                bottom: calc(10px + var(--safe-bottom));
                 right: 10px;
                 left: 10px;
             }
@@ -1674,7 +1673,6 @@
             align-items: center;
         }
 
-        /* Fix for iOS tap highlight */
         button,
         .btn,
         .cat-item,
@@ -2794,7 +2792,7 @@
                 $importFileInput.value = '';
             });
 
-            // ─── PARTICLES ───
+            // ─── PARTICLES (more visible) ───
             let particles = [];
             let particleAnimationId = null;
 
@@ -2804,17 +2802,16 @@
                 const ctx = canvas.getContext('2d');
                 const accentRGB = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() ||
                     '212,149,168';
-                const accentColor = `rgba(${accentRGB}, 0.6)`;
-                const particleCount = window.innerWidth < 600 ? 20 : 35;
+                const particleCount = window.innerWidth < 600 ? 25 : 40;
                 particles = [];
                 for (let i = 0; i < particleCount; i++) {
                     particles.push({
                         x: Math.random() * canvas.width,
                         y: Math.random() * canvas.height,
-                        vx: (Math.random() - 0.5) * 0.25,
-                        vy: (Math.random() - 0.5) * 0.25,
-                        size: Math.random() * 4 + 1.5,
-                        opacity: Math.random() * 0.25 + 0.15,
+                        vx: (Math.random() - 0.5) * 0.35,
+                        vy: (Math.random() - 0.5) * 0.35,
+                        size: Math.random() * 5 + 2,
+                        opacity: Math.random() * 0.35 + 0.25,
                     });
                 }
 
@@ -2835,12 +2832,12 @@
                         if (p.y < -10) p.y = canvas.height + 10;
                         if (p.y > canvas.height + 10) p.y = -10;
                         ctx.beginPath();
-                        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2);
-                        gradient.addColorStop(0, `rgba(${accentRGB}, ${p.opacity * 1.2})`);
-                        gradient.addColorStop(0.4, `rgba(${accentRGB}, ${p.opacity * 0.6})`);
+                        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.5);
+                        gradient.addColorStop(0, `rgba(${accentRGB}, ${p.opacity * 1.4})`);
+                        gradient.addColorStop(0.5, `rgba(${accentRGB}, ${p.opacity * 0.7})`);
                         gradient.addColorStop(1, 'rgba(0,0,0,0)');
                         ctx.fillStyle = gradient;
-                        ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
+                        ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
                         ctx.fill();
                     }
                     particleAnimationId = requestAnimationFrame(draw);
@@ -2848,7 +2845,6 @@
                 draw();
             }
 
-            // ─── DYNAMIC TOPBAR HEIGHT (mobile) ───
             function updateMainPadding() {
                 if (window.innerWidth <= 900) {
                     const topbarHeight = $topBar.offsetHeight;
@@ -2905,7 +2901,7 @@
                 initParticles();
             }
             init();
-            console.log('🎬 Jana\'s Movies — refined topbar, particles, sidebar glass consistency.');
+            console.log('🎬 Jana\'s Movies — glass topbar, centered controls, fixed sidebar background, brighter particles.');
         })();
     </script>
 </body>
