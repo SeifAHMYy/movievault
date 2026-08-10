@@ -1485,6 +1485,15 @@
                 font-size: 1rem;
             }
         }
+        .sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* background: var(--bg-glass); */
+    -webkit-backdrop-filter: blur(48px) saturate(160%);
+    z-index: -1;
+    border-right: 1px solid var(--border);
+}
     </style>
 </head>
 <body>
