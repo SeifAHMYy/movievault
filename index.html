@@ -13,6 +13,7 @@
         /* ─── ROOT ─── */
         :root {
             --bg-root: #0a0a0c;
+            --bg-root-rgb: 10, 10, 12;
             --bg-elevated: #111114;
             --bg-surface: rgba(24, 24, 29, 0.55);
             --bg-card: rgba(26, 26, 32, 0.60);
@@ -48,10 +49,12 @@
             --transition-spring: 0.45s cubic-bezier(0.22, 0.9, 0.18, 1.1);
             --sidebar-w: 260px;
             --topbar-height: 72px;
+            --topbar-mobile-height: 68px;
         }
 
         .light-mode {
             --bg-root: #f4f1f3;
+            --bg-root-rgb: 244, 241, 243;
             --bg-elevated: #faf7f9;
             --bg-surface: rgba(237, 232, 235, 0.55);
             --bg-card: rgba(255, 255, 255, 0.60);
@@ -103,6 +106,13 @@
             position: relative;
         }
 
+        /* ─── BODY SCROLL LOCK (for sidebar open on mobile) ─── */
+        html.sidebar-locked,
+        html.sidebar-locked body {
+            overflow: hidden !important;
+            height: 100% !important;
+        }
+
         /* ─── AMBIENT BLUR OVERLAY ─── */
         #ambientBlur {
             position: fixed;
@@ -144,6 +154,7 @@
             touch-action: pan-y;
             background: var(--bg-root);
             border-right: 1px solid var(--border);
+            overscroll-behavior: contain;
         }
         .sidebar::before {
             content: '';
@@ -390,6 +401,10 @@
             box-shadow: var(--shadow-md);
             border-color: var(--accent);
         }
+        .sidebar-toggle-btn:active {
+            transform: scale(0.93);
+            transition: transform 0.1s ease;
+        }
 
         /* Close button inside sidebar (mobile) */
         .sidebar-close-btn {
@@ -422,6 +437,7 @@
             transition: opacity var(--transition-smooth);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
+            touch-action: none;
         }
         .sidebar-overlay.visible {
             opacity: 1;
@@ -1327,6 +1343,7 @@
         @media (max-width: 900px) {
             :root {
                 --topbar-height: 68px;
+                --topbar-mobile-height: 64px;
             }
             .sidebar {
                 width: 100vw;
@@ -1366,20 +1383,30 @@
             .sidebar-toggle-btn {
                 display: flex;
                 z-index: 110;
-                top: 14px;
-                left: 14px;
+                top: 12px;
+                left: 12px;
+                width: 38px;
+                height: 38px;
+                font-size: 1.2rem;
+                border-radius: 50%;
+                background: rgba(var(--bg-root-rgb), 0.75);
+                backdrop-filter: blur(22px) saturate(160%);
+                -webkit-backdrop-filter: blur(22px) saturate(160%);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04);
+                color: var(--text-primary);
             }
             .main-content {
                 margin-left: 0 !important;
                 padding: 14px 12px;
-                padding-top: calc(var(--topbar-height) + 20px);
+                padding-top: calc(var(--topbar-mobile-height) + 20px);
             }
             .sidebar-overlay.visible {
                 opacity: 1;
                 pointer-events: auto;
             }
 
-            /* TOPBAR FIXED ON MOBILE */
+            /* ─── TOPBAR FIXED ON MOBILE — PREMIUM REDESIGN ─── */
             .top-bar {
                 position: fixed;
                 top: 0;
@@ -1387,24 +1414,63 @@
                 right: 0;
                 z-index: 50;
                 margin-bottom: 0;
-                border-radius: 0;
-                padding: 10px 14px;
-                background: var(--bg-root);
-                box-shadow: var(--shadow-md);
-                min-height: var(--topbar-height);
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                background: rgba(var(--bg-root-rgb), 0.85);
-                border-bottom: 1px solid var(--border-visible);
+                border-radius: 0 0 20px 20px;
+                padding: 8px 14px 8px 58px;
+                min-height: var(--topbar-mobile-height);
+                background: rgba(var(--bg-root-rgb), 0.78);
+                backdrop-filter: blur(28px) saturate(180%);
+                -webkit-backdrop-filter: blur(28px) saturate(180%);
+                box-shadow:
+                    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+                    0 2px 16px rgba(0, 0, 0, 0.45),
+                    0 8px 40px rgba(0, 0, 0, 0.25);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            /* Accent shimmer at top */
+            .top-bar::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: linear-gradient(90deg,
+                        transparent 0%,
+                        rgba(var(--accent-rgb, 212, 149, 168), 0.3) 15%,
+                        rgba(var(--accent-rgb, 212, 149, 168), 0.55) 40%,
+                        rgba(var(--accent-rgb, 212, 149, 168), 0.3) 65%,
+                        transparent 100%);
+                z-index: 2;
+                pointer-events: none;
+                opacity: 0.7;
             }
             .top-bar::after {
-                border-radius: 0;
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(180deg,
+                        rgba(255, 255, 255, 0.03) 0%,
+                        rgba(255, 255, 255, 0.01) 40%,
+                        transparent 100%);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                z-index: -1;
+                border-radius: 0 0 20px 20px;
+                border: none;
             }
             .top-bar h1 {
-                font-size: 1.15rem;
+                font-size: 1.1rem;
                 order: 1;
                 flex: 0 0 auto;
                 width: auto;
+                font-weight: 700;
+                letter-spacing: -0.03em;
+                white-space: nowrap;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
             }
             .search-wrap {
                 order: 3;
@@ -1415,13 +1481,31 @@
             .search-wrap input {
                 padding: 9px 14px 9px 38px;
                 font-size: 0.82rem;
+                background: rgba(var(--bg-root-rgb), 0.55);
+                backdrop-filter: blur(18px);
+                -webkit-backdrop-filter: blur(18px);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: var(--radius-full);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
             }
             .view-toggle {
                 order: 4;
+                background: rgba(var(--bg-root-rgb), 0.5);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border-radius: var(--radius-full);
+                padding: 2px;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
             }
             .view-toggle button {
                 padding: 6px 12px;
                 font-size: 0.75rem;
+                border-radius: var(--radius-full);
+            }
+            .view-toggle button.active {
+                background: rgba(255, 255, 255, 0.08);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
             }
             .sort-select {
                 order: 5;
@@ -1429,12 +1513,20 @@
                 padding: 6px 12px;
                 padding-right: 32px;
                 min-height: 34px;
+                background: rgba(var(--bg-root-rgb), 0.5);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border-radius: var(--radius-full);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+                border: none;
             }
             #addMovieBtn {
                 order: 2;
                 margin-left: auto;
                 padding: 8px 14px;
                 font-size: 0.78rem;
+                border-radius: var(--radius-full);
+                box-shadow: 0 4px 18px var(--accent-glow);
             }
             #addMovieBtn i {
                 font-size: 0.9rem;
@@ -1470,6 +1562,9 @@
             }
         }
         @media (max-width: 480px) {
+            :root {
+                --topbar-mobile-height: 60px;
+            }
             .movie-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
@@ -1490,19 +1585,28 @@
             .btn i {
                 font-size: 0.9rem;
             }
+            .top-bar {
+                padding: 6px 10px 6px 52px;
+                min-height: var(--topbar-mobile-height);
+                border-radius: 0 0 16px 16px;
+                gap: 6px;
+            }
+            .top-bar::after {
+                border-radius: 0 0 16px 16px;
+            }
             .top-bar h1 {
-                font-size: 1rem;
+                font-size: 0.95rem;
             }
             .movie-card .poster-emoji {
                 font-size: 2rem;
             }
-            .top-bar {
-                padding: 8px 12px;
-                min-height: 62px;
-            }
             .search-wrap input {
-                padding: 8px 12px 8px 34px;
-                font-size: 0.78rem;
+                padding: 7px 12px 7px 32px;
+                font-size: 0.76rem;
+            }
+            .search-wrap i {
+                left: 11px;
+                font-size: 0.85rem;
             }
             .view-toggle button {
                 padding: 5px 10px;
@@ -1519,9 +1623,16 @@
                 font-size: 0.72rem;
             }
             .main-content {
-                padding-top: calc(var(--topbar-height) + 16px);
+                padding-top: calc(var(--topbar-mobile-height) + 14px);
                 padding-left: 10px;
                 padding-right: 10px;
+            }
+            .sidebar-toggle-btn {
+                top: 10px;
+                left: 10px;
+                width: 34px;
+                height: 34px;
+                font-size: 1.1rem;
             }
         }
 
@@ -1855,6 +1966,10 @@
                 customCategories: [],
             };
 
+            // ─── SCROLL LOCK STATE ───
+            let savedScrollY = 0;
+            let isScrollLocked = false;
+
             // ─── DOM REFS ───
             const $ = (sel) => document.querySelector(sel);
             const $$ = (sel) => document.querySelectorAll(sel);
@@ -1923,6 +2038,13 @@
                     `radial-gradient(ellipse at 30% 40%, ${settings.accentColor} 0%, transparent 70%),
                      radial-gradient(ellipse at 70% 60%, ${settings.accentColor} 0%, transparent 60%)`;
 
+                // Update accent RGB for topbar shimmer
+                const hex = settings.accentColor.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
+
                 currentViewMode = settings.defaultView;
                 $sortSelect.value = settings.defaultSort;
                 updateViewToggleUI();
@@ -1955,6 +2077,45 @@
 
             function genId() { return 'mv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
 
+            // ─── SCROLL LOCK UTILITIES ───
+            function lockBodyScroll() {
+                if (isScrollLocked) return;
+                savedScrollY = window.scrollY || window.pageYOffset;
+                isScrollLocked = true;
+                document.documentElement.classList.add('sidebar-locked');
+                document.body.style.position = 'fixed';
+                document.body.style.top = `-${savedScrollY}px`;
+                document.body.style.width = '100%';
+                document.body.style.overflow = 'hidden';
+                // Add touchmove listener for extra protection
+                document.addEventListener('touchmove', preventBodyScroll, { passive: false });
+            }
+
+            function unlockBodyScroll() {
+                if (!isScrollLocked) return;
+                isScrollLocked = false;
+                document.documentElement.classList.remove('sidebar-locked');
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                document.body.style.overflow = '';
+                document.removeEventListener('touchmove', preventBodyScroll);
+                // Restore scroll position
+                window.scrollTo(0, savedScrollY);
+                savedScrollY = 0;
+            }
+
+            function preventBodyScroll(e) {
+                // Allow scrolling inside the sidebar or modal overlays
+                const target = e.target;
+                if (target && target.closest) {
+                    if (target.closest('.sidebar') || target.closest('.modal-overlay')) {
+                        return; // Allow scroll within these elements
+                    }
+                }
+                e.preventDefault();
+            }
+
             // ─── TOAST ───
             function showToast(msg, undoCallback) {
                 const t = document.createElement('div');
@@ -1983,9 +2144,9 @@
                     $sidebarOverlay.classList.toggle('visible', isOpen);
                     document.body.classList.toggle('sidebar-open', isOpen);
                     if (isOpen) {
-                        document.addEventListener('touchmove', preventBodyScroll, { passive: false });
+                        lockBodyScroll();
                     } else {
-                        document.removeEventListener('touchmove', preventBodyScroll);
+                        unlockBodyScroll();
                     }
                 } else {
                     $sidebar.classList.toggle('collapsed');
@@ -2001,13 +2162,7 @@
                     $sidebar.classList.remove('open-mobile');
                     $sidebarOverlay.classList.remove('visible');
                     document.body.classList.remove('sidebar-open');
-                    document.removeEventListener('touchmove', preventBodyScroll);
-                }
-            }
-
-            function preventBodyScroll(e) {
-                if (e.target.closest && !e.target.closest('.sidebar') && !e.target.closest('.modal-overlay')) {
-                    e.preventDefault();
+                    unlockBodyScroll();
                 }
             }
 
@@ -2072,7 +2227,9 @@
 
             function closeCategoryModal() {
                 $categoryModalOverlay.classList.remove('open');
-                document.body.style.overflow = '';
+                if (!isScrollLocked) {
+                    document.body.style.overflow = '';
+                }
             }
 
             function saveCategoryFromModal() {
@@ -2425,7 +2582,9 @@
 
             function closePreviewModal() {
                 $previewModalOverlay.classList.remove('open');
-                document.body.style.overflow = '';
+                if (!isScrollLocked) {
+                    document.body.style.overflow = '';
+                }
             }
 
             $previewCloseBtn.addEventListener('click', closePreviewModal);
@@ -2495,7 +2654,9 @@
 
             function closeModal() {
                 $movieModalOverlay.classList.remove('open');
-                document.body.style.overflow = '';
+                if (!isScrollLocked) {
+                    document.body.style.overflow = '';
+                }
                 editingId = null;
                 tempTags = [];
                 clearModalFields();
@@ -2765,11 +2926,14 @@
             // ─── RESIZE ───
             window.addEventListener('resize', () => {
                 if (window.innerWidth > 900) {
+                    // Unlock scroll if transitioning from mobile
+                    if (isScrollLocked && $sidebar.classList.contains('open-mobile')) {
+                        unlockBodyScroll();
+                    }
                     if ($sidebar.classList.contains('open-mobile')) {
                         $sidebar.classList.remove('open-mobile');
                         $sidebarOverlay.classList.remove('visible');
                         document.body.classList.remove('sidebar-open');
-                        document.removeEventListener('touchmove', preventBodyScroll);
                     }
                     if (settings.sidebarCollapsed) {
                         $sidebar.classList.add('collapsed');
@@ -2779,9 +2943,11 @@
                         $mainContent.style.marginLeft = '';
                     }
                 } else {
+                    if (isScrollLocked && !$sidebar.classList.contains('open-mobile')) {
+                        unlockBodyScroll();
+                    }
                     if (!$sidebar.classList.contains('open-mobile')) {
                         document.body.classList.remove('sidebar-open');
-                        document.removeEventListener('touchmove', preventBodyScroll);
                     }
                     $sidebar.classList.remove('collapsed');
                     $mainContent.style.marginLeft = '0';
@@ -2807,10 +2973,17 @@
                 updateStatusDropdown();
                 renderTagSuggestions();
                 setTimeout(observeCards, 400);
+
+                // Initialize accent RGB from settings
+                const hex = settings.accentColor.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
             }
 
             init();
-            console.log('🎬 Jana\'s Movies — Fixed topbar padding, sidebar full-width centered, close button added.');
+            console.log('🎬 Jana\'s Movies — Mobile fixes applied: topbar redesigned, toggle overlap fixed, scroll locked when sidebar open.');
         })();
     </script>
 </body>
